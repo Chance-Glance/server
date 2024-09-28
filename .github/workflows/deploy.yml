@@ -38,6 +38,8 @@ jobs:
     - name: Make zip file
       run: |
         mkdir deploy
+        cp ./src/main/resources/env.properties ./deploy
+        cp ./src/main/resources/env.properties ./deploy
         cp ./docker-compose.blue.yml ./deploy/
         cp ./docker-compose.green.yml ./deploy/
         cp ./appspec.yml ./deploy/
