@@ -1,0 +1,15 @@
+#blue
+version: '3'
+services:
+  mohazi-api:
+    build: .
+    ports:
+      - "8081:8080"
+    container_name: spring-blue
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT =${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - SPRING_PROFILES_ACTIVE=dev
