@@ -6,5 +6,5 @@ services:
     ports:
       - "8081:8080"
     container_name: spring-blue
-    env_file:
-      - ./env.properties
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
