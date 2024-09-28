@@ -38,6 +38,11 @@ jobs:
     - name: Make zip file
       run: |
         mkdir deploy
+        cp ./docker-compose.blue.yml ./deploy/
+        cp ./docker-compose.green.yml ./deploy/
+        cp ./appspec.yml ./deploy/
+        cp ./Dockerfile ./deploy/
+        cp ./scripts/*.sh ./deploy/
         cp ./build/libs/*.jar ./deploy/
         zip -r -qq -j ./mohazi.zip ./deploy
 
@@ -50,3 +55,9 @@ jobs:
 
     - name: Upload to S3
       run: aws s3 cp --region ap-northeast-2 ./mohazi.zip s3://code-deploy-mohazi
+
+    - name: Code Deploy
+      run: aws deploy create-deployment --application-name mohagonocar-deploy-origin
+        --deployment-config-name CodeDeployDefault.OneAtATime
+        --deployment-group-name mohagonocar-deploy-origin-group
+        --s3-location bucket=code-deploy-mohazi,bundleType=zip,key=mohazi.zip
