@@ -2,7 +2,7 @@ name: Java CI with Gradle
 
 on: 
   push:
-    branches: [ "setting/#6" ]
+    branches: [ "develop" ]
 
 jobs:
   deploy:
