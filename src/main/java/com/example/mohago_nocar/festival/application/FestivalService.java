@@ -4,6 +4,7 @@ import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.model.FestivalImage;
 import com.example.mohago_nocar.festival.domain.repository.FestivalImageRepository;
 import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
+import com.example.mohago_nocar.festival.domain.service.FestivalImageUseCase;
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
 import com.example.mohago_nocar.festival.infrastructure.FestivalImageJpaRepository;
 import com.example.mohago_nocar.festival.presentation.response.FestivalResponseDto;
@@ -19,14 +20,14 @@ import org.springframework.stereotype.Service;
 public class FestivalService implements FestivalUseCase {
 
     public final FestivalRepository festivalRepository;
-    public final FestivalImageRepository festivalImageRepository;
+    public final FestivalImageUseCase festivalImageUseCase;
 
     @Override
     public PagedResponseDto<FestivalResponseDto> fetchFestivals(Pageable pageable) {
         Page<Festival> pagedFestival = festivalRepository.getFestivals(pageable);
         Page<FestivalResponseDto> pagedFestivalResponseDto =
                 pagedFestival.map(festival -> {
-                    List<FestivalImage> festivalImages = festivalImageRepository.getAllFestivalImages(festival.getId());
+                    List<FestivalImage> festivalImages = festivalImageUseCase.getAllFestivalImages(festival.getId());
                     List<String> festivalImagesUrl = festivalImages.stream().map(FestivalImage::getImageUrl).toList();
                     return FestivalResponseDto.of(festival, festivalImagesUrl);
                     }
