@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FestivalImageService implements FestivalImageUseCase {
 
-    public final FestivalImageRepository festivalImageRepository;
+    private final FestivalImageRepository festivalImageRepository;
 
     @Override
     public List<FestivalImage> getAllFestivalImages(Long festivalId) {

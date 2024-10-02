@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FestivalService implements FestivalUseCase {
 
-    public final FestivalRepository festivalRepository;
-    public final FestivalImageUseCase festivalImageUseCase;
+    private final FestivalRepository festivalRepository;
+    private final FestivalImageUseCase festivalImageUseCase;
 
     @Override
     public PagedResponseDto<FestivalResponseDto> fetchFestivals(Pageable pageable) {

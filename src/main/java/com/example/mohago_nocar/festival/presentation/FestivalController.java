@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FestivalController {
 
     private final FestivalUseCase festivalUseCase;
+
     @Operation(summary = "축제 조회", description = "축제 정보를 반환합니다. 페이지네이션이 적용되어있습니다.")
     @GetMapping("")
     public ApiResponse<PagedResponseDto<FestivalResponseDto>> fetchFestivals(
