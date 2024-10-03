@@ -1,7 +1,6 @@
 package com.example.mohago_nocar.festival.domain.model;
 
 import com.example.mohago_nocar.festival.domain.model.vo.ActivePeriod;
-import com.example.mohago_nocar.festival.domain.model.vo.Address;
 import com.example.mohago_nocar.global.common.domain.BaseEntity;
 import com.example.mohago_nocar.global.common.domain.vo.Location;
 import jakarta.persistence.*;
@@ -9,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
-import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -29,17 +27,17 @@ public class Festival extends BaseEntity {
     private ActivePeriod activePeriod;
 
     @NotNull
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @NotNull
-    @Embedded
-    private Address address;
+    private String address;
 
     @NotNull
     @Embedded
     private Location location;
 
-    public static Festival from(String name, ActivePeriod activePeriod, String description, Address address, Location location) {
+    public static Festival from(String name, ActivePeriod activePeriod, String description, String address, Location location) {
         return Festival.builder()
                 .name(name)
                 .activePeriod(activePeriod)
@@ -50,7 +48,7 @@ public class Festival extends BaseEntity {
     }
 
     @Builder
-    private Festival(String name, ActivePeriod activePeriod, String description, Address address, Location location) {
+    private Festival(String name, ActivePeriod activePeriod, String description, String address, Location location) {
         this.name = name;
         this.activePeriod = activePeriod;
         this.description = description;
