@@ -2,8 +2,9 @@ package com.example.mohago_nocar.festival.presentation.response;
 
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.model.vo.ActivePeriod;
-import com.example.mohago_nocar.festival.domain.model.vo.Location;
 import java.util.List;
+
+import com.example.mohago_nocar.global.common.domain.vo.Location;
 import lombok.Builder;
 
 @Builder
