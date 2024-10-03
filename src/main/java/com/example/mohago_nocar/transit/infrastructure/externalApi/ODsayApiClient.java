@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -37,16 +36,14 @@ public class ODsayApiClient {
 
         String encodedApiKey = createEncodedApiKey();
 
-        String uriString = UriComponentsBuilder.fromUriString(baseUrl)
+        return UriComponentsBuilder.fromUriString(baseUrl)
                 .queryParam("SX", startX)
                 .queryParam("SY", startY)
                 .queryParam("EX", endX)
                 .queryParam("EY", endY)
                 .queryParam("apiKey", encodedApiKey)
-                .build(false)
-                .toUriString();
-
-        return UriComponentsBuilder.fromUriString(uriString).build(true).toUri();
+                .build(true)
+                .toUri();
     }
 
     private String createEncodedApiKey() {
