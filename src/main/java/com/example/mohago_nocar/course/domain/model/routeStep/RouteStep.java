@@ -1,6 +1,6 @@
 package com.example.mohago_nocar.course.domain.model.routeStep;
 
-import com.example.mohago_nocar.course.domain.model.vo.Location;
+import com.example.mohago_nocar.global.common.domain.vo.Location;
 import com.example.mohago_nocar.global.common.domain.BaseEntity;
 import com.example.mohago_nocar.global.util.DurationToIntervalConverter;
 import jakarta.persistence.*;

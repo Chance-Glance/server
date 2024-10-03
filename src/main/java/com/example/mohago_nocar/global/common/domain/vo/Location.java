@@ -1,4 +1,4 @@
-package com.example.mohago_nocar.festival.domain.model.vo;
+package com.example.mohago_nocar.global.common.domain.vo;
 
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;

@@ -1,8 +1,8 @@
 package com.example.mohago_nocar.festival.domain.model;
 
 import com.example.mohago_nocar.festival.domain.model.vo.ActivePeriod;
-import com.example.mohago_nocar.festival.domain.model.vo.Location;
 import com.example.mohago_nocar.global.common.domain.BaseEntity;
+import com.example.mohago_nocar.global.common.domain.vo.Location;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

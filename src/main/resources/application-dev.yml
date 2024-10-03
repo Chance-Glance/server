@@ -28,3 +28,7 @@ springdoc:
   swagger-ui:
     operations-sorter: alpha
     tags-sorter: alpha
+
+odsay:
+  url: https://api.odsay.com/v1/api/searchPubTransPathT
+  api-key: ${ODSAY_API_KEY}
