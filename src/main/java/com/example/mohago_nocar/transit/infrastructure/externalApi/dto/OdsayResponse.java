@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Optional;
 
 public record OdsayResponse(
-        @JsonProperty("code") Optional<String> code,
-        @JsonProperty("message") Optional<String> message,
-        @JsonProperty("result") Optional<JsonNode> result
+        Optional<JsonNode> error,
+        Optional<JsonNode> result
 ) {
 }

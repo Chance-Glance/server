@@ -38,18 +38,30 @@ public class TransitPathMapper {
     }
 
     private static void validateOdsayErrorResponse(OdsayResponse response) {
-        if (response.code().isEmpty()) {
+        JsonNode errorNode = extractError(response);
+
+        if (errorNode.isEmpty()) {
             return;
         }
 
-        String errorCode = response.code().get();
+        String errorCode = extractErrorInfo(errorNode, "code");
+        String errorMessage = extractErrorInfo(errorNode, "message");
+
         if (isOdsyServerError(errorCode)) {
             log.error("ODsay 500 error: {}", response);
             // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException("server error");
+            throw new RuntimeException(errorMessage);
         }
 
-        throw new RuntimeException(response.message().orElse("경로를 찾을 수 없습니다."));
+        throw new RuntimeException(errorMessage);
+    }
+
+    private static JsonNode extractError(OdsayResponse response) {
+        return response.error().get();
+    }
+
+    private static String extractErrorInfo(JsonNode errorNode, String info) {
+        return errorNode.get(0).get(info).asText();
     }
 
     private static boolean isOdsyServerError(String errorCode) {

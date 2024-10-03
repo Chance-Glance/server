@@ -27,26 +27,15 @@ public class OdsayResponseDeserializer extends JsonDeserializer<OdsayResponse> {
     }
 
     private OdsayResponse parse(JsonNode node) {
-        Optional<String> code = find(node, "code");
-        Optional<String> message = find(node, "message", "msg");
-        Optional<JsonNode> result = findResult(node);
+        Optional<JsonNode> errorNode = find(node, "error");
+        Optional<JsonNode> result = find(node, "result");
 
-        return new OdsayResponse(code, message, result);
+        return new OdsayResponse(errorNode, result);
     }
 
-    private Optional<String> find(JsonNode node, String... fieldName) {
-        for (String field : fieldName) {
-            JsonNode nodeName = node.findPath(field);
-            if (!nodeName.isMissingNode()) {
-                return Optional.of(nodeName.textValue());
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Optional<JsonNode> findResult(JsonNode node) {
+    private Optional<JsonNode> find(JsonNode node, String fieldName) {
         try {
-            JsonNode result = node.get("result");
+            JsonNode result = node.get(fieldName);
             return Optional.of(result);
         } catch (NullPointerException exception) {
             return Optional.empty();
