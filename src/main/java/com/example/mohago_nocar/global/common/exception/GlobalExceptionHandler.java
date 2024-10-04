@@ -87,10 +87,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleGeneralException(
             CustomException e
     ) {
-        log.warn(">>> handle: GeneralException | " +e.getGlobalStatus() + e);
+        log.warn(">>> handle: GeneralException | " +e.getStatus() + e);
 
-        ApiResponse<Object> response = ApiResponse.onFailure(e.getGlobalStatus().getCode(), e.getMessage(), null);
-        return ResponseEntity.status(e.getGlobalStatus().getHttpStatus()).body(response);
+        ApiResponse<Object> response = ApiResponse.onFailure(e.getStatus().getCode(), e.getMessage(), null);
+        return ResponseEntity.status(e.getStatus().getHttpStatus()).body(response);
     }
 
     /**

@@ -32,3 +32,7 @@ springdoc:
 odsay:
   url: https://api.odsay.com/v1/api/searchPubTransPathT
   api-key: ${ODSAY_API_KEY}
+
+google:
+  url : https://maps.googleapis.com/maps/api/place/nearbysearch/json?
+  api-key : ${GOOGLE_API_KEY}

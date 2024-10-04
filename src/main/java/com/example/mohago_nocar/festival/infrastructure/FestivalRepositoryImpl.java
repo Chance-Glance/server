@@ -2,6 +2,7 @@ package com.example.mohago_nocar.festival.infrastructure;
 
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,5 +17,10 @@ public class FestivalRepositoryImpl implements FestivalRepository {
     @Override
     public Page<Festival> getFestivals(Pageable pageable) {
         return festivalJpaRepository.findAll(pageable);
+    }
+
+    @Override
+    public Optional<Festival> getFestivalById(Long id) {
+        return festivalJpaRepository.findById(id);
     }
 }
