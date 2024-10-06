@@ -44,4 +44,10 @@ public class FestivalService implements FestivalUseCase {
                 .orElseThrow(FestivalNotFoundException::new);
         return FestivalLocationResponseDto.of(festival.getLocation());
     }
+
+    @Override
+    public List<Festival> getAllFestivals() {
+
+        return festivalRepository.getAllFestivals();
+    }
 }
