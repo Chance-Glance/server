@@ -34,5 +34,5 @@ odsay:
   api-key: ${ODSAY_API_KEY}
 
 google:
-  url : https://maps.googleapis.com/maps/api/place/nearbysearch/json?
+  url : https://places.googleapis.com/v1/
   api-key : ${GOOGLE_API_KEY}
