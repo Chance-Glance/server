@@ -3,7 +3,6 @@ package com.example.mohago_nocar.place.infrastructure.externalApi;
 import com.example.mohago_nocar.place.infrastructure.externalApi.dto.request.GoogleNearPlaceRequest;
 import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.GoogleNearbyPlaceResponse;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.GooglePlaceImageResponse;
@@ -108,7 +107,7 @@ public class GoogleApiClient {
 
     public List<PlaceResponseDto> findNearbyPlaces(double festivalX, double festivalY, int radius) {
         URI requestURI = buildNearPlaceRequestURI();
-        GoogleNearbyPlaceResponse googleNearPlaceResponse = fetchNearPlace(requestURI, festivalX, festivalY, radius);
+        GoogleNearbyPlaceResponse googleNearPlaceResponse = fetchNearPlaceResponse(requestURI, festivalX, festivalY, radius);
 
         List<PlaceResponseDto> placeResponseDtos = PlaceMapper.mapGoogleNearPlaceResponseToPlaceResponseDtos(googleNearPlaceResponse);
 
@@ -122,7 +121,7 @@ public class GoogleApiClient {
                 .toUri();
     }
 
-    private GoogleNearbyPlaceResponse fetchNearPlace(URI requestURI, double festivalX, double festivalY, int radius) {
+    private GoogleNearbyPlaceResponse fetchNearPlaceResponse(URI requestURI, double festivalX, double festivalY, int radius) {
         GoogleNearPlaceRequest requestBody = GoogleNearPlaceRequest.of(
                 REQUEST_PLACE_TYPES, MAX_RESULT_COUNT, festivalX, festivalY, radius, RANK_PREFERENCE, LANGUAGE_CODE);
 
@@ -163,15 +162,16 @@ public class GoogleApiClient {
     }
 
     private List<String> findGooglePlaceImage(List<String> photoNames) {
-        List<String> placeImageUris = new ArrayList<>();
-        for (String name : photoNames) {
-            URI uri = buildPlaceImageRequestURI(name);
-            GooglePlaceImageResponse imageUri = fetchPlaceImage(uri);
+        return photoNames.stream()
+                .map(this::fetchPlaceImageUri)
+                .collect(Collectors.toList());
+    }
 
-            placeImageUris.add(imageUri.photoUri());
-        }
+    private String fetchPlaceImageUri(String photoName) {
+        URI uri = buildPlaceImageRequestURI(photoName);
+        GooglePlaceImageResponse imageResponse = fetchPlaceImageResponse(uri);
 
-        return placeImageUris;
+        return imageResponse.photoUri();
     }
 
     private URI buildPlaceImageRequestURI(String name) {
@@ -185,7 +185,7 @@ public class GoogleApiClient {
                 .toUri();
     }
 
-    private GooglePlaceImageResponse fetchPlaceImage(URI uri) {
+    private GooglePlaceImageResponse fetchPlaceImageResponse(URI uri) {
         try {
             return restClient.get()
                     .uri(uri)
