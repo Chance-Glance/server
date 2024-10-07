@@ -32,8 +32,7 @@ public class OdsayRouteMapper {
                 throw new InternalServerException("ODsay API error 처리에 실패하였습니다.");
             }
 
-            System.out.println(errorCode);
-            System.out.println(errorMessage);
+            log.info("errorMessage: {}", errorMessage);
             OdsayErrorCode odsayErrorCode = OdsayErrorCode.from(errorCode);
             log.warn("ODsay API returns error response : {}", errorMessage);
 
