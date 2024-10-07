@@ -1,4 +1,4 @@
-package com.example.mohago_nocar.place.application.converter;
+package com.example.mohago_nocar.place.application.mapper;
 
 import com.example.mohago_nocar.global.common.domain.vo.Location;
 import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
@@ -9,7 +9,7 @@ import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.Pl
 import java.util.List;
 
 
-public class PlaceConverter {
+public class FestivalNearPlaceMapper {
 
     public static FestivalNearPlace convertToFestivalNearPlace(Long festivalId, PlaceResponseDto dto) {
 

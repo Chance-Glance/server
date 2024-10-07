@@ -3,7 +3,7 @@ package com.example.mohago_nocar.place.application;
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
 import com.example.mohago_nocar.festival.presentation.response.FestivalLocationResponseDto;
-import com.example.mohago_nocar.place.application.converter.PlaceConverter;
+import com.example.mohago_nocar.place.application.mapper.FestivalNearPlaceMapper;
 import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
 import com.example.mohago_nocar.place.domain.model.FestivalNearPlaceImage;
 import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceImageRepository;
@@ -36,20 +36,19 @@ public class PlaceService implements PlaceUseCase {
 
     private void updateFestivalNearbyPlaces(Long festivalId) {
         FestivalLocationResponseDto festivalLocation = festivalUseCase.getFestivalLocation(festivalId);
-        List<PlaceResponseDto> nearbyPlaces = getNearbyPlacesFrom(festivalLocation);
-
-        saveNearbyPlaces(festivalId, nearbyPlaces);
+        List<PlaceResponseDto> nearbyPlaces = searchNearbyPlacesWithImages(festivalLocation);
+        saveNearbyPlacesWithImages(festivalId, nearbyPlaces);
     }
 
-    private List<PlaceResponseDto> getNearbyPlacesFrom(FestivalLocationResponseDto festivalLocation) {
-        return googleApiClient.findNearbyPlaces(
+    private List<PlaceResponseDto> searchNearbyPlacesWithImages(FestivalLocationResponseDto festivalLocation) {
+        return googleApiClient.searchNearbyPlacesWithImageUris(
                 festivalLocation.location().getLatitude(),
                 festivalLocation.location().getLongitude(),
                 RADIUS
         );
     }
 
-    private void saveNearbyPlaces(Long festivalId, List<PlaceResponseDto> nearbyPlaces) {
+    private void saveNearbyPlacesWithImages(Long festivalId, List<PlaceResponseDto> nearbyPlaces) {
         nearbyPlaces.forEach(placeDto -> {
             FestivalNearPlace savedPlace = saveFestivalNearPlace(festivalId, placeDto);
             saveFestivalNearPlaceImages(savedPlace.getId(), placeDto.getPhotos());
@@ -57,12 +56,12 @@ public class PlaceService implements PlaceUseCase {
     }
 
     private FestivalNearPlace saveFestivalNearPlace(Long festivalId, PlaceResponseDto placeDto) {
-        FestivalNearPlace place = PlaceConverter.convertToFestivalNearPlace(festivalId, placeDto);
+        FestivalNearPlace place = FestivalNearPlaceMapper.convertToFestivalNearPlace(festivalId, placeDto);
         return festivalNearPlaceRepository.save(place);
     }
 
     private void saveFestivalNearPlaceImages(Long placeId, List<String> photos) {
-        List<FestivalNearPlaceImage> placeImages = PlaceConverter.convertToFestivalNearPlaceImage(placeId, photos);
+        List<FestivalNearPlaceImage> placeImages = FestivalNearPlaceMapper.convertToFestivalNearPlaceImage(placeId, photos);
         placeImages.forEach(festivalNearPlaceImageRepository::save);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.GooglePlaceImageResponse;
 import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.PlaceResponseDto;
-import com.example.mohago_nocar.place.infrastructure.externalApi.mapper.PlaceMapper;
+import com.example.mohago_nocar.place.infrastructure.externalApi.mapper.GooglePlaceMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -105,11 +105,10 @@ public class GoogleApiClient {
         this.baseUrl = baseUrl;
     }
 
-    public List<PlaceResponseDto> findNearbyPlaces(double festivalX, double festivalY, int radius) {
+    public List<PlaceResponseDto> searchNearbyPlacesWithImageUris(double festivalX, double festivalY, int radius) {
         URI requestURI = buildNearPlaceRequestURI();
         GoogleNearbyPlaceResponse googleNearPlaceResponse = fetchNearPlaceResponse(requestURI, festivalX, festivalY, radius);
-
-        List<PlaceResponseDto> placeResponseDtos = PlaceMapper.mapGoogleNearPlaceResponseToPlaceResponseDtos(googleNearPlaceResponse);
+        List<PlaceResponseDto> placeResponseDtos = GooglePlaceMapper.mapGoogleNearPlaceResponseToPlaceResponseDtos(googleNearPlaceResponse);
 
         return convertPhotoNamesToUris(placeResponseDtos);
     }
@@ -156,18 +155,18 @@ public class GoogleApiClient {
 
     private PlaceResponseDto convertPhotoNamesToUrisForDto(PlaceResponseDto placeResponseDto) {
         List<String> photoNames = placeResponseDto.getPhotos();
-        List<String> photoUris = findGooglePlaceImage(photoNames);
+        List<String> photoUris = searchPlaceImagesFrom(photoNames);
 
         return placeResponseDto.withUpdatedPhotos(photoUris);
     }
 
-    private List<String> findGooglePlaceImage(List<String> photoNames) {
+    private List<String> searchPlaceImagesFrom(List<String> photoNames) {
         return photoNames.stream()
-                .map(this::fetchPlaceImageUri)
+                .map(this::searchPlaceImageUri)
                 .collect(Collectors.toList());
     }
 
-    private String fetchPlaceImageUri(String photoName) {
+    private String searchPlaceImageUri(String photoName) {
         URI uri = buildPlaceImageRequestURI(photoName);
         GooglePlaceImageResponse imageResponse = fetchPlaceImageResponse(uri);
 

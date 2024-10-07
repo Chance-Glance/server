@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class PlaceMapper {
+public class GooglePlaceMapper {
 
     public static List<PlaceResponseDto> mapGoogleNearPlaceResponseToPlaceResponseDtos(GoogleNearbyPlaceResponse googleNearbyPlaceResponse) {
         JsonNode placesNode = googleNearbyPlaceResponse.places();
@@ -18,7 +18,7 @@ public class PlaceMapper {
     private static List<PlaceResponseDto> mapPlacesNodeToResponseDtos(JsonNode placesNode) {
 
         return streamJsonNodeOrEmpty(placesNode)
-                .map(PlaceMapper::mapPlaceNodeToDto)
+                .map(GooglePlaceMapper::mapPlaceNodeToDto)
                 .toList();
     }
 
