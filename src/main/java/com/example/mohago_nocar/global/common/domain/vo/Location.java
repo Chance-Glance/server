@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Location {
 
-    private Double latitude;
-    private Double longitude;
+    private Double longitude; // x
+    private Double latitude; // y
 
-    public static Location from(Double latitude, Double longitude) {
+    public static Location from(Double longitude, Double latitude) {
         return Location.builder()
-                .latitude(latitude)
                 .longitude(longitude)
+                .latitude(latitude)
                 .build();
     }
 }
