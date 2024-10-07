@@ -18,10 +18,10 @@ public class ODsayApiClient {
     private final String baseUrl;
 
     public ODsayApiClient(
-            RestClient restClient,
+            RestClient.Builder restClientBuilder,
             @Value("${odsay.api-key}") String apiKey,
             @Value("${odsay.url}") String baseUrl) {
-        this.restClient = restClient;
+        this.restClient = restClientBuilder.build();
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
