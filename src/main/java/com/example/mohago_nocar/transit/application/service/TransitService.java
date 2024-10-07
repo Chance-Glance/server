@@ -16,8 +16,13 @@ public class TransitService implements TransitUseCase {
     private final ODsayApiClient oDsayApiClient;
 
     @Override
-    public TransitInfo findTransitInfo(double startX, double startY, double endX, double endY) {
-        OdsayResponse response = oDsayApiClient.request(startX, startY, endX, endY);
+    public TransitInfo findRouteTransitBetweenPlaces(Location from, Location to) {
+        RouteResponseDto response = oDsayApiClient.searchRoute(
+                from.getLongitude(),
+                from.getLatitude(),
+                to.getLongitude(),
+                to.getLatitude()
+        );
 
         return TransitMapper.mapRouteResponseDtoToTransitInfo(response);
     }
