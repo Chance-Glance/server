@@ -1,5 +1,6 @@
 package com.example.mohago_nocar.transit.infrastructure.mapper;
 
+import com.example.mohago_nocar.global.common.exception.InternalServerException;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -21,8 +22,8 @@ public class OdsayResponseDeserializer extends JsonDeserializer<OdsaySearchRoute
 
             return parse(node);
         } catch (IOException exception) {
-            // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException(exception.getMessage());
+            log.error("IOException 발생");
+            throw new InternalServerException(exception.getMessage());
         }
     }
 
