@@ -1,6 +1,6 @@
 package com.example.mohago_nocar.transit.infrastructure.mapper;
 
-import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.OdsayResponse;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -12,10 +12,10 @@ import java.util.Optional;
 
 @JsonComponent
 @Slf4j
-public class OdsayResponseDeserializer extends JsonDeserializer<OdsayResponse> {
+public class OdsayResponseDeserializer extends JsonDeserializer<OdsaySearchRouteResponseDto> {
 
     @Override
-    public OdsayResponse deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
+    public OdsaySearchRouteResponseDto deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
         try {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
@@ -26,11 +26,11 @@ public class OdsayResponseDeserializer extends JsonDeserializer<OdsayResponse> {
         }
     }
 
-    private OdsayResponse parse(JsonNode node) {
+    private OdsaySearchRouteResponseDto parse(JsonNode node) {
         Optional<JsonNode> errorNode = find(node, "error");
         Optional<JsonNode> result = find(node, "result");
 
-        return new OdsayResponse(errorNode, result);
+        return new OdsaySearchRouteResponseDto(errorNode, result);
     }
 
     private Optional<JsonNode> find(JsonNode node, String fieldName) {
