@@ -1,5 +1,7 @@
 package com.example.mohago_nocar.transit.infrastructure.externalApi;
 
+import com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.RouteResponseDto;
 import com.example.mohago_nocar.transit.infrastructure.mapper.OdsayRouteMapper;
@@ -11,6 +13,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
+
+import static com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode.ODSAY_SERVER_ERROR;
 
 @Component
 public class ODsayApiClient {
@@ -53,8 +57,7 @@ public class ODsayApiClient {
             return URLEncoder.encode(apiKey, "UTF-8");
 
         } catch (UnsupportedEncodingException e) {
-            // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException(e);
+            throw new OdsayException(e.getMessage(), ODSAY_SERVER_ERROR);
         }
     }
 
@@ -65,8 +68,7 @@ public class ODsayApiClient {
                 .body(OdsaySearchRouteResponseDto.class);
 
         return Objects.requireNonNullElseGet(response, () -> {
-            // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException("서버 에러");
+            throw new OdsayException(ODSAY_SERVER_ERROR);
         });
     }
 }
