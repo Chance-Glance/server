@@ -4,19 +4,16 @@ import lombok.Getter;
 
 @Getter
 public class CustomException extends RuntimeException {
-    private GlobalStatus globalStatus;
 
-    public CustomException(String message, GlobalStatus errorStatus) {
+    private Status status;
+
+    public CustomException(Status status) {
+        super(status.getMessage());
+        this.status = status;
+    }
+
+    public CustomException(String message, Status status) {
         super(message);
-        this.globalStatus = errorStatus;
-    }
-
-    public CustomException(GlobalStatus errorStatus) {
-        super(errorStatus.getMessage());
-        this.globalStatus = errorStatus;
-    }
-
-    public Body getBody() {
-        return this.globalStatus.getBody();
+        this.status = status;
     }
 }
