@@ -5,5 +5,5 @@ import com.example.mohago_nocar.transit.domain.model.TransitInfo;
 
 public interface TransitUseCase {
 
-    TransitInfo findRouteTransitBetweenPlaces(Location departureLocation, Location destinationLocation);
+    TransitInfo findRouteTransitBetweenPlaces(Location from, Location to);
 }
