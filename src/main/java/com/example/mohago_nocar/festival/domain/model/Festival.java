@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDate;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -54,5 +56,9 @@ public class Festival extends BaseEntity {
         this.description = description;
         this.address = address;
         this.location = location;
+    }
+
+    public boolean isDateWithinFestivalPeriod(LocalDate date) {
+        return !date.isBefore(activePeriod.getStartDate()) && !date.isAfter(activePeriod.getEndDate());
     }
 }
