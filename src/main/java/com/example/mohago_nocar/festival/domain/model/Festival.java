@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDate;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -36,6 +38,12 @@ public class Festival extends BaseEntity {
     @NotNull
     @Embedded
     private Location location;
+
+    @NotNull
+    private LocalDate startDate;
+
+    @NotNull
+    private LocalDate endDate;
 
     public static Festival from(String name, ActivePeriod activePeriod, String description, String address, Location location) {
         return Festival.builder()
