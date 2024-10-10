@@ -1,6 +1,10 @@
 package com.example.mohago_nocar.transit.infrastructure.externalApi;
 
-import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.OdsayResponse;
+import com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.RouteResponseDto;
+import com.example.mohago_nocar.transit.infrastructure.mapper.OdsayRouteMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -10,6 +14,8 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Objects;
 
+import static com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode.ODSAY_SERVER_ERROR;
+
 @Component
 public class ODsayApiClient {
 
@@ -18,22 +24,22 @@ public class ODsayApiClient {
     private final String baseUrl;
 
     public ODsayApiClient(
-            RestClient restClient,
+            RestClient.Builder restClientBuilder,
             @Value("${odsay.api-key}") String apiKey,
             @Value("${odsay.url}") String baseUrl) {
-        this.restClient = restClient;
+        this.restClient = restClientBuilder.build();
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
 
-    public OdsayResponse request(double startX, double startY, double endX, double endY) {
+    public RouteResponseDto searchRoute(double startX, double startY, double endX, double endY) {
         URI requestURI = buildRequestURI(startX, startY, endX, endY);
+        OdsaySearchRouteResponseDto odsayRouteResponse = fetchOdsayRouteResponse(requestURI);
 
-        return fetchOdsayResponse(requestURI);
+        return OdsayRouteMapper.mapOdsayRouteResponseToRouteResponse(odsayRouteResponse);
     }
 
     private URI buildRequestURI(double startX, double startY, double endX, double endY) {
-
         String encodedApiKey = createEncodedApiKey();
 
         return UriComponentsBuilder.fromUriString(baseUrl)
@@ -49,21 +55,20 @@ public class ODsayApiClient {
     private String createEncodedApiKey() {
         try {
             return URLEncoder.encode(apiKey, "UTF-8");
+
         } catch (UnsupportedEncodingException e) {
-            // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException(e);
+            throw new OdsayException(e.getMessage(), ODSAY_SERVER_ERROR);
         }
     }
 
-    private OdsayResponse fetchOdsayResponse(URI requestURI) {
-        OdsayResponse response = restClient.get()
+    private OdsaySearchRouteResponseDto fetchOdsayRouteResponse(URI requestURI) {
+        OdsaySearchRouteResponseDto response = restClient.get()
                 .uri(requestURI)
                 .retrieve()
-                .body(OdsayResponse.class);
+                .body(OdsaySearchRouteResponseDto.class);
 
         return Objects.requireNonNullElseGet(response, () -> {
-            // TODO: Exception 핸들링 코드 완성 이후 커스텀 에러로 변경
-            throw new RuntimeException("서버 에러");
+            throw new OdsayException(ODSAY_SERVER_ERROR);
         });
     }
 }

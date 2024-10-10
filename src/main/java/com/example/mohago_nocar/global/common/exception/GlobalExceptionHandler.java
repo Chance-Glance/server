@@ -81,13 +81,13 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * GeneralException을 handling 합니다.
+     * CustomException을 handling 합니다.
      */
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse<?>> handleGeneralException(
             CustomException e
     ) {
-        log.warn(">>> handle: GeneralException | " +e.getStatus() + e);
+        log.warn(">>> handle: CustomException | " +e.getStatus() + ": "+ e.getMessage());
 
         ApiResponse<Object> response = ApiResponse.onFailure(e.getStatus().getCode(), e.getMessage(), null);
         return ResponseEntity.status(e.getStatus().getHttpStatus()).body(response);
