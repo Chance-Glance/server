@@ -39,12 +39,6 @@ public class Festival extends BaseEntity {
     @Embedded
     private Location location;
 
-    @NotNull
-    private LocalDate startDate;
-
-    @NotNull
-    private LocalDate endDate;
-
     public static Festival from(String name, ActivePeriod activePeriod, String description, String address, Location location) {
         return Festival.builder()
                 .name(name)
