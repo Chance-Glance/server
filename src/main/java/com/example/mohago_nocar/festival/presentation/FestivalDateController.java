@@ -31,5 +31,4 @@ public class FestivalDateController {
         List<LocalDate> festivalDates = festivalDateService.findFestivalsBetween(startDate, endDate);
         return ApiResponse.ok(festivalDates);
     }
-
 }
