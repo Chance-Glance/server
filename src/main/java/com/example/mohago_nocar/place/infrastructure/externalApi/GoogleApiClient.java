@@ -142,10 +142,10 @@ public class GoogleApiClient {
     }
 
     /**
-     * Google API 요청을 통해 주어진 PlaceResponseDto List의 photos 필드 값을 photoName에서 photoUri로 변환합니다.
+     * Google API 요청을 통해 주어진 NearPlaceResponseDto List의 photos 필드 값을 photoName에서 photoUri로 변환합니다.
      *
-     * @param placeResponseDtos 변환할 PlaceResponseDto 목록 (변환 전의 photos 필드 값은 photoName)
-     * @return 변환된 PlaceResponseDto 목록 (photos 필드 값은 photoUri)
+     * @param placeResponseDtos 변환할 NearPlaceResponseDto 목록 (변환 전의 photos 필드 값은 photoName)
+     * @return 변환된 NearPlaceResponseDto 목록 (photos 필드 값은 photoUri)
      */
     private List<PlaceResponseDto> convertPhotoNamesToUris(List<PlaceResponseDto> placeResponseDtos) {
         return placeResponseDtos.stream()
