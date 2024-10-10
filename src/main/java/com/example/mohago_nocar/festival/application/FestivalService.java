@@ -7,9 +7,12 @@ import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
 import com.example.mohago_nocar.festival.domain.service.FestivalImageUseCase;
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
 import com.example.mohago_nocar.festival.infrastructure.FestivalImageJpaRepository;
+import com.example.mohago_nocar.festival.presentation.exception.FestivalNotFoundException;
+import com.example.mohago_nocar.festival.presentation.response.FestivalLocationResponseDto;
 import com.example.mohago_nocar.festival.presentation.response.FestivalResponseDto;
 import com.example.mohago_nocar.global.common.dto.PagedResponseDto;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,5 +36,18 @@ public class FestivalService implements FestivalUseCase {
                     }
                 );
         return new PagedResponseDto<>(pagedFestivalResponseDto);
+    }
+
+    @Override
+    public FestivalLocationResponseDto getFestivalLocation(Long festivalId) {
+        Festival festival = festivalRepository.getFestivalById(festivalId)
+                .orElseThrow(FestivalNotFoundException::new);
+        return FestivalLocationResponseDto.of(festival.getLocation());
+    }
+
+    @Override
+    public List<Festival> getAllFestivals() {
+
+        return festivalRepository.getAllFestivals();
     }
 }
