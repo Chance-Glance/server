@@ -2,9 +2,8 @@ package com.example.mohago_nocar.festival.infrastructure;
 
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
-
 import java.util.List;
-import java.util.Optional;
+import com.example.mohago_nocar.festival.presentation.exception.FestivalNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +21,9 @@ public class FestivalRepositoryImpl implements FestivalRepository {
     }
 
     @Override
-    public Optional<Festival> getFestivalById(Long id) {
-        return festivalJpaRepository.findById(id);
+    public Festival getFestivalById(Long id) {
+        return festivalJpaRepository.findById(id)
+                .orElseThrow(FestivalNotFoundException::new);
     }
 
     @Override
