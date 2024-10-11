@@ -13,7 +13,9 @@ public interface FestivalUseCase {
 
     PagedResponseDto<FestivalResponseDto> fetchFestivals(Pageable pageable);
 
-   FestivalLocationResponseDto getFestivalLocation(Long festivalId);
+    FestivalLocationResponseDto getFestivalLocation(Long festivalId);
 
     List<Festival> getAllFestivals();
+
+    Festival getFestival(Long festivalId);
 }
