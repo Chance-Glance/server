@@ -40,19 +40,20 @@ public class PlaceService implements PlaceUseCase {
         festivals.forEach(festival -> updateFestivalNearbyPlaces(festival.getId()));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public PagedResponseDto<NearPlaceResponseDto> getFestivalNearPlaces(Long festivalId, Pageable pageable) {
         Festival festival = festivalUseCase.getFestival(festivalId);
         Page<FestivalNearPlace> pagedPlaces = festivalNearPlaceRepository.getFestivalNearPlaceByFestivalId(festivalId, pageable);
-        Page<NearPlaceResponseDto> nearPlaceResponseDtos = pagedPlaces.map(place -> {
-            List<FestivalNearPlaceImage> images = festivalNearPlaceImageRepository.getAllPlaceImageByPlaceId(place.getId());
-            List<String> imageUrls = images.stream().map(FestivalNearPlaceImage::getImageUrl).toList();
-            List<String> operatingHours = place.getOperatingSchedule().getOperatingHours().stream().map(OperatingSchedule.OperatingHour::getOperatingHour).toList();
-            return NearPlaceResponseDto.of(place, operatingHours, imageUrls);
-        });
-
+        Page<NearPlaceResponseDto> nearPlaceResponseDtos = pagedPlaces.map(this::convertPlaceToNearPlaceResponseDto);
         return new PagedResponseDto<>(nearPlaceResponseDtos);
+    }
+
+    private NearPlaceResponseDto convertPlaceToNearPlaceResponseDto(FestivalNearPlace place) {
+        List<FestivalNearPlaceImage> images = festivalNearPlaceImageRepository.getAllPlaceImageByPlaceId(place.getId());
+        List<String> imageUrls = images.stream().map(FestivalNearPlaceImage::getImageUrl).toList();
+        List<String> operatingHours = place.getOperatingSchedule().getOperatingHours().stream().map(OperatingSchedule.OperatingHour::getOperatingHour).toList();
+        return NearPlaceResponseDto.of(place, operatingHours, imageUrls);
     }
 
     private void updateFestivalNearbyPlaces(Long festivalId) {
