@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,5 +50,11 @@ public class FestivalService implements FestivalUseCase {
     public List<Festival> getAllFestivals() {
 
         return festivalRepository.getAllFestivals();
+    }
+
+    @Override
+    public Festival getFestival(Long festivalId) {
+        return festivalRepository.getFestivalById(festivalId)
+                .orElseThrow(FestivalNotFoundException::new);
     }
 }
