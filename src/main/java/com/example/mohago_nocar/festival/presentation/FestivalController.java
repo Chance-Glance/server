@@ -1,6 +1,7 @@
 package com.example.mohago_nocar.festival.presentation;
 
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
+import com.example.mohago_nocar.festival.presentation.response.FestivalActivePeriodResponseDto;
 import com.example.mohago_nocar.festival.presentation.response.FestivalResponseDto;
 import com.example.mohago_nocar.global.common.dto.PagedResponseDto;
 import com.example.mohago_nocar.global.common.response.ApiResponse;
@@ -9,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/festivals")
@@ -31,5 +29,12 @@ public class FestivalController {
         Pageable pageable = PageRequest.of(page, size);
         PagedResponseDto<FestivalResponseDto> pagedResponse = festivalUseCase.fetchFestivals(pageable);
         return ApiResponse.ok(pagedResponse);
+    }
+
+    @Operation(summary = "축제 일정 조회", description = "지정된 축제의 일정을 조회합니다.")
+    @GetMapping("{festivalId}/active-period")
+    public ApiResponse<FestivalActivePeriodResponseDto> findFestivalDate(@PathVariable Long id) {
+        FestivalActivePeriodResponseDto activePeriodResponse = festivalUseCase.getFestivalActivePeriod(id);
+        return ApiResponse.ok(activePeriodResponse);
     }
 }
