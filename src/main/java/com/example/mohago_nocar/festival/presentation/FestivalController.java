@@ -32,9 +32,9 @@ public class FestivalController {
     }
 
     @Operation(summary = "축제 일정 조회", description = "지정된 축제의 일정을 조회합니다.")
-    @GetMapping("{festivalId}/active-period")
-    public ApiResponse<FestivalActivePeriodResponseDto> findFestivalDate(@PathVariable Long id) {
-        FestivalActivePeriodResponseDto activePeriodResponse = festivalUseCase.getFestivalActivePeriod(id);
+    @GetMapping("/{festivalId}/active-period")
+    public ApiResponse<FestivalActivePeriodResponseDto> findFestivalDate(@PathVariable Long festivalId) {
+        FestivalActivePeriodResponseDto activePeriodResponse = festivalUseCase.getFestivalActivePeriod(festivalId);
         return ApiResponse.ok(activePeriodResponse);
     }
 }
