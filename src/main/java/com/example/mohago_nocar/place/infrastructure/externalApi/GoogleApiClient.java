@@ -105,9 +105,9 @@ public class GoogleApiClient {
         this.baseUrl = baseUrl;
     }
 
-    public List<PlaceResponseDto> searchNearbyPlacesWithImageUris(double festivalX, double festivalY, int radius) {
+    public List<PlaceResponseDto> searchNearbyPlacesWithImageUris(double latitude, double longitude, int radius) {
         URI requestURI = buildNearPlaceRequestURI();
-        GoogleNearbyPlaceResponse googleNearPlaceResponse = fetchNearPlaceResponse(requestURI, festivalX, festivalY, radius);
+        GoogleNearbyPlaceResponse googleNearPlaceResponse = fetchNearPlaceResponse(requestURI, latitude, longitude, radius);
         List<PlaceResponseDto> placeResponseDtos = GooglePlaceMapper.mapGoogleNearPlaceResponseToPlaceResponseDtos(googleNearPlaceResponse);
 
         return convertPhotoNamesToUris(placeResponseDtos);
@@ -120,9 +120,9 @@ public class GoogleApiClient {
                 .toUri();
     }
 
-    private GoogleNearbyPlaceResponse fetchNearPlaceResponse(URI requestURI, double festivalX, double festivalY, int radius) {
+    private GoogleNearbyPlaceResponse fetchNearPlaceResponse(URI requestURI, double latitude, double longitude, int radius) {
         GoogleNearPlaceRequest requestBody = GoogleNearPlaceRequest.of(
-                REQUEST_PLACE_TYPES, MAX_RESULT_COUNT, festivalX, festivalY, radius, RANK_PREFERENCE, LANGUAGE_CODE);
+                REQUEST_PLACE_TYPES, MAX_RESULT_COUNT, latitude, longitude, radius, RANK_PREFERENCE, LANGUAGE_CODE);
 
         try {
             return restClient.post()
