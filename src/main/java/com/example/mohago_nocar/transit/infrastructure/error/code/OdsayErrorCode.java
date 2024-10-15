@@ -46,4 +46,8 @@ public enum OdsayErrorCode implements Status {
             default -> throw new OdsayException("unknown Error Code 발생 : "+ code, ODSAY_SERVER_ERROR);
         };
     }
+
+    public boolean isIgnorableError() {
+        return this == POINTS_WITHIN_DISTANCE;
+    }
 }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
+
 @Slf4j
 public class OdsayRouteMapper {
 
@@ -32,9 +33,14 @@ public class OdsayRouteMapper {
                 throw new InternalServerException("ODsay API error 처리에 실패하였습니다.");
             }
 
-            log.info("errorMessage: {}", errorMessage);
             OdsayErrorCode odsayErrorCode = OdsayErrorCode.from(errorCode);
-            log.warn("ODsay API returns error response : {}", errorMessage);
+
+            log.info("ODsay errorMessage: {}", errorMessage);
+            log.warn("ODsay API returns error response : {}", odsayErrorCode);
+
+            if (odsayErrorCode.isIgnorableError()) {
+                return;
+            }
 
             throw new OdsayException(odsayErrorCode);
         });
