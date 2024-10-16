@@ -47,7 +47,7 @@ public enum OdsayErrorCode implements Status {
         };
     }
 
-    public boolean isIgnorableError() {
+    public boolean isDistanceException() {
         return this == POINTS_WITHIN_DISTANCE;
     }
 }

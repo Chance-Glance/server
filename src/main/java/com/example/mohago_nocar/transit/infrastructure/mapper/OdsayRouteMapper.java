@@ -2,6 +2,7 @@ package com.example.mohago_nocar.transit.infrastructure.mapper;
 
 import com.example.mohago_nocar.global.common.exception.InternalServerException;
 import com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayDistanceException;
 import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.RouteResponseDto;
@@ -38,8 +39,8 @@ public class OdsayRouteMapper {
             log.info("ODsay errorMessage: {}", errorMessage);
             log.warn("ODsay API returns error response : {}", odsayErrorCode);
 
-            if (odsayErrorCode.isIgnorableError()) {
-                return;
+            if (odsayErrorCode.isDistanceException()) {
+                throw new OdsayDistanceException();
             }
 
             throw new OdsayException(odsayErrorCode);

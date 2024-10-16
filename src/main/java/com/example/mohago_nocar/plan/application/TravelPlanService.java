@@ -111,7 +111,7 @@ public class TravelPlanService implements TravelPlanUseCase {
                 try {
                     TransitInfo transitInfo = transitUseCase.findRouteTransitBetweenPlaces(locations.get(i), locations.get(j));
                     transitMap.put(locations.get(j), transitInfo);
-                } catch (Exception e) {
+                } catch (OdsayDistanceException e) {
                     double dist = getKmDist(locations.get(i), locations.get(j));
                     TransitInfo transitInfo = new TransitInfo((int) Math.round(dist * 15), dist, null);
                     transitMap.put(locations.get(j), transitInfo);
