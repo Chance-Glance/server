@@ -23,7 +23,7 @@ public class ODsayApiClient {
     private final String apiKey;
     private final String baseUrl;
 
-    public static final int SLEEP_DURATION_MS = 150;
+    public static final int SLEEP_DURATION_MS = 200;
 
     public ODsayApiClient(
             RestClient.Builder restClientBuilder,
