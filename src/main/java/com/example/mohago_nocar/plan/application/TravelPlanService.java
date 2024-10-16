@@ -75,19 +75,52 @@ public class TravelPlanService implements TravelPlanUseCase {
 
     }
 
-    private List<Location> getOptimalRoute(List<Location> locations) {
-        Map<Location, Map<Location, TransitInfo>> transitMaps =
-                locations.stream().collect(Collectors.toMap(
-                        from -> from,
-                        from -> locations.stream()
-                                .filter(to -> !from.equals(to))
-                                .collect(Collectors.toMap(
-                                        to -> to,
-                                        to -> transitUseCase.findRouteTransitBetweenPlaces(from, to)
-                                ))
-                ));
+    private Double convertLongitudeToKmDist(Double dx, Double stdLatitude) {
+        final int EARTH_RADIUS = 6371;
 
+        return EARTH_RADIUS * dx * Math.cos(stdLatitude) * Math.PI / 180;
+    }
+
+    private Double convertLatitudeToKmDist(Double dy) {
+        final int EARTH_RADIUS = 6371;
+
+        return EARTH_RADIUS * dy * Math.PI / 180;
+    }
+
+    private Double getKmDist(Location l1, Location l2) {
+        Double dx = l1.getLongitude() - l2.getLongitude();
+        Double dy = l1.getLatitude() - l2.getLatitude();
+
+        Double longitudeDist = convertLongitudeToKmDist(dx, l1.getLatitude());
+        Double latitudeDist = convertLatitudeToKmDist(dy);
+
+        return Math.sqrt(longitudeDist * longitudeDist + latitudeDist * latitudeDist);
+    }
+
+    private List<Location> getOptimalRoute(List<Location> locations) {
         int n = locations.size();
+
+        Map<Location, Map<Location, TransitInfo>> transitMaps = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            Map<Location, TransitInfo> transitMap = new HashMap<>();
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                try {
+                    TransitInfo transitInfo = transitUseCase.findRouteTransitBetweenPlaces(locations.get(i), locations.get(j));
+                    transitMap.put(locations.get(j), transitInfo);
+                } catch (Exception e) {
+                    double dist = getKmDist(locations.get(i), locations.get(j));
+                    TransitInfo transitInfo = new TransitInfo((int) Math.round(dist * 15), dist, null);
+                    transitMap.put(locations.get(j), transitInfo);
+                }
+
+            }
+
+            transitMaps.put(locations.get(i), transitMap);
+        }
 
         List<Location> route = new ArrayList<>();
         List<Boolean> isSelected = new ArrayList<>();

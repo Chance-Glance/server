@@ -1,6 +1,8 @@
 package com.example.mohago_nocar.transit.domain.model;
 
 import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 @Getter
