@@ -31,6 +31,8 @@ public class TravelPlanService implements TravelPlanUseCase {
     private final FestivalRepository festivalRepository;
     private final TransitUseCase transitUseCase;
 
+    private static final int EARTH_RADIUS = 6371;
+
     int calcTravelTime(List<Location> route,  Map<Location, Map<Location, TransitInfo>> transitMaps) {
         int n = route.size();
 
@@ -73,13 +75,11 @@ public class TravelPlanService implements TravelPlanUseCase {
     }
 
     private Double convertLongitudeToKmDist(Double dx, Double stdLatitude) {
-        final int EARTH_RADIUS = 6371;
 
         return EARTH_RADIUS * dx * Math.cos(stdLatitude) * Math.PI / 180;
     }
 
     private Double convertLatitudeToKmDist(Double dy) {
-        final int EARTH_RADIUS = 6371;
 
         return EARTH_RADIUS * dy * Math.PI / 180;
     }
