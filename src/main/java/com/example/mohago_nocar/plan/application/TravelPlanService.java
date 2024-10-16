@@ -9,18 +9,15 @@ import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceReposit
 import com.example.mohago_nocar.plan.domain.service.TravelPlanUseCase;
 import com.example.mohago_nocar.plan.presentation.request.PlanTravelCourseRequestDto;
 import com.example.mohago_nocar.plan.presentation.response.PlanTravelCourseResponseDto;
-import com.example.mohago_nocar.transit.domain.model.SubPath;
 import com.example.mohago_nocar.transit.domain.model.TransitInfo;
 import com.example.mohago_nocar.transit.domain.service.TransitUseCase;
-import lombok.Getter;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayDistanceException;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.example.mohago_nocar.plan.presentation.exception.PlanErrorCode.TRAVEL_DATE_NOT_IN_FESTIVAL_PERIOD;
