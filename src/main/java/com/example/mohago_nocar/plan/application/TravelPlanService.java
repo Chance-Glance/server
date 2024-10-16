@@ -88,8 +88,10 @@ public class TravelPlanService implements TravelPlanUseCase {
     }
 
     private Double getKmDist(Location l1, Location l2) {
-        Double dx = l1.getLongitude() - l2.getLongitude();
-        Double dy = l1.getLatitude() - l2.getLatitude();
+        Double dx = Math.abs(l1.getLongitude() - l2.getLongitude());
+        dx = Math.min(dx, 360 - dx);
+
+        Double dy = Math.abs(l1.getLatitude() - l2.getLatitude());
 
         Double longitudeDist = convertLongitudeToKmDist(dx, l1.getLatitude());
         Double latitudeDist = convertLatitudeToKmDist(dy);
