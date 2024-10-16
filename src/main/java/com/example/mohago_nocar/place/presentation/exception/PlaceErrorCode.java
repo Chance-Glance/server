@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum PlaceErrorCode implements Status {
 
     GOOGLE_PLACE_NOT_FOUND(HttpStatus.NOT_FOUND,"PLACE404", "장소를 찾을 수 없습니다."),
+    PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "PLACE404", "장소를 찾을 수 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
