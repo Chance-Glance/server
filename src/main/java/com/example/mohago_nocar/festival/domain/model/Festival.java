@@ -58,7 +58,8 @@ public class Festival extends BaseEntity {
         this.location = location;
     }
 
-    public boolean isDateWithinFestivalPeriod(LocalDate date) {
-        return !date.isBefore(activePeriod.getStartDate()) && !date.isAfter(activePeriod.getEndDate());
+
+    public boolean isDateDuringFestival(LocalDate travelDate) {
+        return activePeriod.containsDate(travelDate);
     }
 }

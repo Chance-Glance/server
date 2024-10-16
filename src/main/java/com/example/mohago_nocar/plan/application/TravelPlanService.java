@@ -136,8 +136,8 @@ public class TravelPlanService implements TravelPlanUseCase {
 
     @Override
     public PlanTravelCourseResponseDto planCourse(PlanTravelCourseRequestDto dto) {
-        Festival festival = getFestivalAndValidateTravelDate(dto);
-        List<FestivalNearPlace> travelPlaces = getTravelPlaces(dto.travelPlaceIds());
+        Festival festival = validateAndGetFestival(dto);
+        List<FestivalNearPlace> travelPlaces = getTravelPlaces(dto.travelPlaceGoogleIds());
 
         /*
         TransitInfo에는 아래와 같은 정보가 있음.
@@ -162,14 +162,14 @@ public class TravelPlanService implements TravelPlanUseCase {
         return null;
     }
 
-    private Festival getFestivalAndValidateTravelDate(PlanTravelCourseRequestDto dto) {
+    private Festival validateAndGetFestival(PlanTravelCourseRequestDto dto) {
         Festival festival = festivalRepository.getFestivalById(dto.festivalId());
-        validateTravelDateWithinFestivalPeriod(festival, dto.travelDate());
+        ensureTravelDateDuringFestival(festival, dto.travelDate());
         return festival;
     }
 
-    private void validateTravelDateWithinFestivalPeriod(Festival festival, LocalDate travelDate) {
-        if (!festival.isDateWithinFestivalPeriod(travelDate)) {
+    private void ensureTravelDateDuringFestival(Festival festival, LocalDate travelDate) {
+        if (!festival.isDateDuringFestival(travelDate)) {
             throw new InvalidValueException(TRAVEL_DATE_NOT_IN_FESTIVAL_PERIOD);
         }
     }

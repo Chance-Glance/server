@@ -17,6 +17,7 @@ public record PlanTravelCourseRequestDto(
         LocalTime arrivalTime,
 
         @Schema(description = "선택된 여행 장소들의 GooglePlaceId", example = "[\"ChIJZ4iA7KrebjURMcTOW3a5dJ0\"]")
-        List<String> travelPlaceIds
+
+        List<String> travelPlaceGoogleIds
 ) {
 }
