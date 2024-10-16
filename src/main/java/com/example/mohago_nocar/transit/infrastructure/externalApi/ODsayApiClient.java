@@ -23,6 +23,8 @@ public class ODsayApiClient {
     private final String apiKey;
     private final String baseUrl;
 
+    public static final int SLEEP_DURATION_MS = 150;
+
     public ODsayApiClient(
             RestClient.Builder restClientBuilder,
             @Value("${odsay.api-key}") String apiKey,
@@ -62,6 +64,13 @@ public class ODsayApiClient {
     }
 
     private OdsaySearchRouteResponseDto fetchOdsayRouteResponse(URI requestURI) {
+        try {
+            Thread.sleep(SLEEP_DURATION_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OdsayException("Thread interrupted while sleeping", ODSAY_SERVER_ERROR);
+        }
+
         OdsaySearchRouteResponseDto response = restClient.get()
                 .uri(requestURI)
                 .retrieve()
