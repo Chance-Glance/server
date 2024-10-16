@@ -33,7 +33,7 @@ public class TravelPlanService implements TravelPlanUseCase {
 
     private static final int EARTH_RADIUS = 6371;
 
-    int calcTravelTime(List<Location> route,  Map<Location, Map<Location, TransitInfo>> transitMaps) {
+    private int calcTravelTime(List<Location> route,  Map<Location, Map<Location, TransitInfo>> transitMaps) {
         int n = route.size();
 
         int travelTime = 0;
