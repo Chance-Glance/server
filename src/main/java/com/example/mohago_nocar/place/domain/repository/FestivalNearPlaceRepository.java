@@ -7,5 +7,7 @@ public interface FestivalNearPlaceRepository {
 
     FestivalNearPlace save(FestivalNearPlace place);
 
-    FestivalNearPlace findByGooglePlaceId(String googlePlaceId);
+    FestivalNearPlace findById(Long id);
+
+    String getPlaceNameByLocation(Location location);
 }
