@@ -7,6 +7,7 @@ import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import static com.example.mohago_nocar.place.presentation.exception.PlaceErrorCode.PLACE_NOT_FOUND;
@@ -33,5 +34,8 @@ public class FestivalNearPlaceRepositoryImpl implements FestivalNearPlaceReposit
         PageRequest pageRequest = PageRequest.of(0, 1);
         Page<String> result = festivalNearPlaceJpaRepository.findNamesByLocation(location.getLatitude(), location.getLongitude(), pageRequest);
         return result.getContent().get(0);
+
+    public Page<FestivalNearPlace> getFestivalNearPlaceByFestivalId(Long festivalId, Pageable pageable) {
+        return festivalNearPlaceJpaRepository.findAllByFestivalId(festivalId, pageable);
     }
 }

@@ -16,4 +16,5 @@ public interface FestivalNearPlaceJpaRepository extends JpaRepository<FestivalNe
                                      @Param("longitude") Double longitude,
                                      Pageable pageable);
 
+    Page<FestivalNearPlace> findAllByFestivalId(Long festivalId, Pageable pageable);
 }
