@@ -11,7 +11,7 @@ public interface FestivalRepository {
 
     Page<Festival> getFestivals(Pageable pageable);
 
-    Optional<Festival> getFestivalById(Long id);
+    Festival getFestivalById(Long id);
 
     List<Festival> getAllFestivals();
 }

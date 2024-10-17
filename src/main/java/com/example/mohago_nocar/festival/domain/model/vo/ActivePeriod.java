@@ -25,4 +25,8 @@ public class ActivePeriod {
                 .endDate(endDate)
                 .build();
     }
+
+    public boolean containsDate(LocalDate travelDate) {
+        return !travelDate.isBefore(startDate) && !travelDate.isAfter(endDate);
+    }
 }

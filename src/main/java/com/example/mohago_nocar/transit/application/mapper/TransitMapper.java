@@ -19,7 +19,7 @@ public class TransitMapper {
         int totalTime = extractTotalTime(path);
         List<SubPath> subPaths = extractSubPaths(path);
 
-        return new TransitInfo(totalTime, totalDistance, subPaths);
+        return TransitInfo.from(totalTime, totalDistance, subPaths);
     }
 
     private static JsonNode extractPath(RouteResponseDto routeResponseDto) {
@@ -28,8 +28,9 @@ public class TransitMapper {
 
     private static double extractTotalDistance(JsonNode path) {
         JsonNode infoNode = path.get("info");
+        double distanceInMeters = infoNode.get("totalDistance").asDouble();
 
-        return infoNode.get("totalDistance").asDouble();
+        return distanceInMeters * 0.001;
     }
 
     private static int extractTotalTime(JsonNode path) {
@@ -50,7 +51,7 @@ public class TransitMapper {
     }
 
     private static SubPath convertPathNodeToSubPath(JsonNode subPathNode) {
-        double distance = subPathNode.get("distance").asDouble();
+        double distance = (subPathNode.get("distance").asDouble()) * 0.001;
         int sectionTime = subPathNode.get("sectionTime").asInt();
         int trafficType = subPathNode.get("trafficType").asInt();
 

@@ -2,6 +2,7 @@ package com.example.mohago_nocar.transit.infrastructure.mapper;
 
 import com.example.mohago_nocar.global.common.exception.InternalServerException;
 import com.example.mohago_nocar.transit.infrastructure.error.code.OdsayErrorCode;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayDistanceException;
 import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.OdsaySearchRouteResponseDto;
 import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.RouteResponseDto;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+
 
 @Slf4j
 public class OdsayRouteMapper {
@@ -32,9 +34,14 @@ public class OdsayRouteMapper {
                 throw new InternalServerException("ODsay API error 처리에 실패하였습니다.");
             }
 
-            log.info("errorMessage: {}", errorMessage);
             OdsayErrorCode odsayErrorCode = OdsayErrorCode.from(errorCode);
-            log.warn("ODsay API returns error response : {}", errorMessage);
+
+            log.info("ODsay errorMessage: {}", errorMessage);
+            log.warn("ODsay API returns error response : {}", odsayErrorCode);
+
+            if (odsayErrorCode.isDistanceException()) {
+                throw new OdsayDistanceException();
+            }
 
             throw new OdsayException(odsayErrorCode);
         });
