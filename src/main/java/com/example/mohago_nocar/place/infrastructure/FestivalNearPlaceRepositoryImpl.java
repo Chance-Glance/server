@@ -34,6 +34,7 @@ public class FestivalNearPlaceRepositoryImpl implements FestivalNearPlaceReposit
         PageRequest pageRequest = PageRequest.of(0, 1);
         Page<String> result = festivalNearPlaceJpaRepository.findNamesByLocation(location.getLatitude(), location.getLongitude(), pageRequest);
         return result.getContent().get(0);
+    }
 
     public Page<FestivalNearPlace> getFestivalNearPlaceByFestivalId(Long festivalId, Pageable pageable) {
         return festivalNearPlaceJpaRepository.findAllByFestivalId(festivalId, pageable);
