@@ -47,8 +47,7 @@ public class FestivalService implements FestivalUseCase {
 
     @Override
     public FestivalActivePeriodResponseDto getFestivalActivePeriod(Long festivalId) {
-        Festival festival = festivalRepository.getFestivalById(festivalId)
-                .orElseThrow(FestivalNotFoundException::new);
+        Festival festival = festivalRepository.getFestivalById(festivalId);
         return FestivalActivePeriodResponseDto.of(festival.getActivePeriod());
     }
 
@@ -59,7 +58,6 @@ public class FestivalService implements FestivalUseCase {
 
     @Override
     public Festival getFestival(Long festivalId) {
-        return festivalRepository.getFestivalById(festivalId)
-                .orElseThrow(FestivalNotFoundException::new);
+        return festivalRepository.getFestivalById(festivalId);
     }
 }
