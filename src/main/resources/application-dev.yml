@@ -35,6 +35,11 @@ spring:
     port: 5672
     username: admin
     password: admin
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: false
 
 springdoc:
   default-consumes-media-type: application/json
