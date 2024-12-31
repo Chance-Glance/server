@@ -129,7 +129,7 @@ class TransitRouteBatchConfigTest {
 
     @DisplayName("하루에 우선순위 큐로 전송 가능한 메시지는 최대 1000개이다.")
     @Test
-    public void odsayApiJobWithExceededDeferredMessages() throws Exception {
+    public void odsayApiJobWithExceededMessageLimit() throws Exception {
         //given
         saveNinetyOdsayApiRequestEntiry();
         mockPriorityQueueProducerBehavior();
