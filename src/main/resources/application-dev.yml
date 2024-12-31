@@ -35,6 +35,12 @@ spring:
     port: 5672
     username: admin
     password: admin
+    queue:
+      odsay:
+        dlq: "odsay.deadLetter.queue"
+        priority: "odsay.priority.queue"
+        deferred: "odsay.deferred.queue"
+
   batch:
     jdbc:
       initialize-schema: never
