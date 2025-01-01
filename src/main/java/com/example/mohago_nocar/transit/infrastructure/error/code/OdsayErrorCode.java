@@ -1,7 +1,7 @@
 package com.example.mohago_nocar.transit.infrastructure.error.code;
 
 import com.example.mohago_nocar.global.common.exception.Status;
-import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayBadRequestException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -12,12 +12,14 @@ public enum OdsayErrorCode implements Status {
 
     // SERVER_ERROR
     ODSAY_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ODSAY500", "ODsay 서버에 오류가 발생하였습니다. ODsay API를 확인해주세요."),
+    LIMIT_COUNT_FETCH_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "ODSAY_LIMIT503", "Redis에서 API 호출 카운트를 가져오지 못했습니다."),
 
     // BAD_REQUEST
     REQUIRED_INPUT_FORMAT_ERROR(HttpStatus.BAD_REQUEST, "ODSAY400", "필수 입력값 형식 및 범위 오류입니다."),
     REQUIRED_INPUT_MISSING(HttpStatus.BAD_REQUEST, "ODSAY400", "필수 입력값이 누락되었습니다."),
     POINTS_WITHIN_DISTANCE(HttpStatus.BAD_REQUEST, "ODSAY400", "출, 도착지가 700m 이내이므로 길찾기 정보가 제공되지 않습니다."),
     COMPONENT_ERROR(HttpStatus.BAD_REQUEST, "ODSAY400" , "잘못된 요청입니다."),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "ODSAY429", "too_many_requests"),
 
     // NOT_FOUND
     STARTING_POINT_MISSING(HttpStatus.NOT_FOUND, "ODSAY404", "출발지 정류장이 없습니다."),
@@ -43,11 +45,17 @@ public enum OdsayErrorCode implements Status {
             case "-98" -> POINTS_WITHIN_DISTANCE;
             case "-99" -> NO_SEARCH_RESULTS;
             case "-1" -> COMPONENT_ERROR;
-            default -> throw new OdsayException("unknown Error Code 발생 : "+ code, ODSAY_SERVER_ERROR);
+            case "429" -> TOO_MANY_REQUESTS;
+            default -> throw new OdsayBadRequestException("unknown Error Code 발생 : "+ code, ODSAY_SERVER_ERROR);
         };
     }
 
-    public boolean isDistanceException() {
+    public boolean isDistanceError() {
         return this == POINTS_WITHIN_DISTANCE;
     }
+
+    public boolean isServerError() {
+        return this == ODSAY_SERVER_ERROR;
+    }
+
 }
