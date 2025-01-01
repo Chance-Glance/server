@@ -98,7 +98,7 @@ class TransitRouteBatchConfigTest {
         //given
         saveNinetyOdsayApiRequestEntiry();
         mockPriorityQueueProducerBehavior();
-        mockDeferredQueueConsumerBehaivor(50);
+        mockDeferredQueueConsumerBehavior(50);
 
         //when
         JobExecution jobExecution = jobLauncherTestUtils.launchJob();
@@ -133,7 +133,7 @@ class TransitRouteBatchConfigTest {
         //given
         saveNinetyOdsayApiRequestEntiry();
         mockPriorityQueueProducerBehavior();
-        mockDeferredQueueConsumerBehaivor(1001);
+        mockDeferredQueueConsumerBehavior(1001);
 
         //when
         JobExecution jobExecution = jobLauncherTestUtils.launchJob();
@@ -161,7 +161,7 @@ class TransitRouteBatchConfigTest {
                 );
     }
 
-    private void mockDeferredQueueConsumerBehaivor(int deferredMessageCounter) {
+    private void mockDeferredQueueConsumerBehavior(int deferredMessageCounter) {
         List<OdsayApiRequestEvent> events = createEvents(deferredMessageCounter);
         AtomicInteger count = new AtomicInteger(0);
         when(rabbitTemplate.receiveAndConvert(
@@ -174,19 +174,6 @@ class TransitRouteBatchConfigTest {
                     }
                     return null;
                 });
-    }
-
-    private List<OdsayApiRequestEvent> createEvents(int num) {
-        List<OdsayApiRequestEvent> odsayApiRequestEvents = new ArrayList<>();
-        for (int i = 0; i < num; i++) {
-            odsayApiRequestEvents.add(createEvent());
-        }
-        return odsayApiRequestEvents;
-    }
-
-    private void saveNinetyOdsayApiRequestEntiry() {
-        List<OdsayApiRequestEntry> odsayApiRequestEntries = createOdsayApiRequestEntries();
-        requestEntryRepository.saveAll(odsayApiRequestEntries);
     }
 
     private void mockDeferredQueueConsumerBehavior() {
@@ -207,10 +194,23 @@ class TransitRouteBatchConfigTest {
                 );
     }
 
+    private List<OdsayApiRequestEvent> createEvents(int num) {
+        List<OdsayApiRequestEvent> odsayApiRequestEvents = new ArrayList<>();
+        for (int i = 0; i < num; i++) {
+            odsayApiRequestEvents.add(createEvent());
+        }
+        return odsayApiRequestEvents;
+    }
+
     private OdsayApiRequestEvent createEvent() {
         return OdsayApiRequestEvent.of(URI.create("test"),
                 RoutePoint.from("수원화성", 127.0119379, 37.2871202),
                 RoutePoint.from("화성행궁", 127.013727, 37.2819666));
+    }
+
+    private void saveNinetyOdsayApiRequestEntiry() {
+        List<OdsayApiRequestEntry> odsayApiRequestEntries = createOdsayApiRequestEntries();
+        requestEntryRepository.saveAll(odsayApiRequestEntries);
     }
 
     private List<OdsayApiRequestEntry> createOdsayApiRequestEntries() {
