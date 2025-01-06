@@ -6,7 +6,7 @@ import com.example.mohago_nocar.transit.domain.model.RoutePoint;
 import com.example.mohago_nocar.transit.infrastructure.batch.persistence.OdsayApiRequestEntry;
 import com.example.mohago_nocar.transit.infrastructure.batch.persistence.OdsayApiRequestEntryRepository;
 import com.example.mohago_nocar.transit.infrastructure.messaging.persistence.OdsayApiRequestEvent;
-import com.example.mohago_nocar.transit.infrastructure.odsay.ODsayApiUriGenerator;
+import com.example.mohago_nocar.transit.infrastructure.odsay.client.ODsayApiUriGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +24,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.sql.DataSource;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,6 +57,10 @@ class TransitRouteBatchConfigTest {
     @Autowired
     private DailyResetService dailyResetService;
 
+    @Autowired
+    private DataSource dataSource;
+
+
     @BeforeEach
     void setUp() {
         dailyResetService.setDailyBatchLimit(1000);
@@ -61,8 +69,18 @@ class TransitRouteBatchConfigTest {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws SQLException {
         requestEntryRepository.deleteAllInBatch();
+
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate("DELETE FROM BATCH_STEP_EXECUTION_CONTEXT");
+            statement.executeUpdate("DELETE FROM BATCH_STEP_EXECUTION");
+            statement.executeUpdate("DELETE FROM BATCH_JOB_EXECUTION_CONTEXT");
+            statement.executeUpdate("DELETE FROM BATCH_JOB_EXECUTION_PARAMS");
+            statement.executeUpdate("DELETE FROM BATCH_JOB_EXECUTION");
+            statement.executeUpdate("DELETE FROM BATCH_JOB_INSTANCE");
+        }
     }
 
     @DisplayName("ODsay API 호출 요청 메시지를 우선순위 큐로 전송한다")
