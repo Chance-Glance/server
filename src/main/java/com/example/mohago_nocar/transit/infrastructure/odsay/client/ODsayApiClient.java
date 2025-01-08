@@ -75,7 +75,7 @@ public class ODsayApiClient {
     }
 
     private void cacheTransitRoute(ODsayApiSuccessResponseWrapper response) {
-        transitUseCase.saveOdsayApiResponse(response);
+        transitUseCase.saveTransitRouteWithSegments(response);
     }
 
     private void initializeSingleThreadedEventProcessor() {
