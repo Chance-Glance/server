@@ -1,14 +1,20 @@
 package com.example.mohago_nocar.transit.application.service;
 
+import com.example.mohago_nocar.festival.domain.model.Festival;
+import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
 import com.example.mohago_nocar.global.common.domain.vo.Location;
+import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
+import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceRepository;
 import com.example.mohago_nocar.transit.application.mapper.TransitMapper;
 import com.example.mohago_nocar.transit.domain.model.*;
 import com.example.mohago_nocar.transit.domain.model.segment.RouteSegment;
 import com.example.mohago_nocar.transit.domain.repository.RouteSegmentRepository;
 import com.example.mohago_nocar.transit.domain.repository.TransitRouteRepository;
 import com.example.mohago_nocar.transit.domain.service.TransitUseCase;
-import com.example.mohago_nocar.transit.infrastructure.externalApi.ODsayApiClient;
-import com.example.mohago_nocar.transit.infrastructure.externalApi.dto.response.RouteResponseDto;
+import com.example.mohago_nocar.transit.infrastructure.batch.persistence.OdsayApiRequestEntry;
+import com.example.mohago_nocar.transit.infrastructure.batch.persistence.OdsayApiRequestEntryRepository;
+import com.example.mohago_nocar.transit.infrastructure.messaging.consumer.ApiRequestEventConsumer;
+import com.example.mohago_nocar.transit.infrastructure.odsay.client.ODsayApiUriGenerator;
 import com.example.mohago_nocar.transit.infrastructure.odsay.dto.response.ODsayApiSuccessResponseWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,18 +30,71 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class TransitService implements TransitUseCase {
 
-    private final ODsayApiClient oDsayApiClient;
+    private final ODsayApiUriGenerator uriGenerator;
+    private final FestivalRepository festivalRepository;
+    private final FestivalNearPlaceRepository festivalNearPlaceRepository;
+    private final OdsayApiRequestEntryRepository apiRequestEntryRepository;
+    private final TransitRouteRepository transitRouteRepository;
+    private final RouteSegmentRepository routeSegmentRepository;
 
-    @Override
-    public TransitInfo findRouteTransitBetweenPlaces(Location from, Location to) {
-        RouteResponseDto response = oDsayApiClient.searchRoute(
+    // 새로운 축제가 생성되면 호출
+    @Transactional
+    public void saveTransitRoute(Long festivalId) {
+        Festival festival = festivalRepository.getFestivalById(festivalId);
+        List<FestivalNearPlace> nearPlaces = festivalNearPlaceRepository.findByFestivalId(festival.getId());
+        List<Location> travelLocations = extractLocationsIn(festival, nearPlaces);
+
+        List<OdsayApiRequestEntry> requests = new ArrayList<>();
+
+        for (Location from : travelLocations) {
+            for (Location to : travelLocations) {
+                if (to.equals(from)) {
+                    continue;
+                }
+                requests.add(createApiCallRequest(from, to));
+            }
+        }
+
+        apiRequestEntryRepository.saveAll(requests);
+    }
+
+    private List<Location> extractLocationsIn(Festival festival, List<FestivalNearPlace> travelPlaces) {
+        return Stream.concat(
+                Stream.of(festival.getLocation()),
+                travelPlaces.stream().map(FestivalNearPlace::getLocation)
+        ).toList();
+    }
+
+    private OdsayApiRequestEntry createApiCallRequest(Location from, Location to) {
+        URI requestURI = uriGenerator.buildRequestURI(
                 from.getLongitude(),
                 from.getLatitude(),
                 to.getLongitude(),
                 to.getLatitude()
         );
 
-        return TransitMapper.mapRouteResponseDtoToTransitInfo(response);
+        return OdsayApiRequestEntry.of(requestURI, RoutePoint.parse(from), RoutePoint.parse(to));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public TransitRouteWithSegments findTransitRouteWithSegments(Location from, Location to) {
+        TransitRoute transitRoute = transitRouteRepository.findByDepartureAndArrival(
+                        RoutePoint.parse(from),
+                        RoutePoint.parse(to));
+
+        List<RouteSegment> segment = routeSegmentRepository.findByTransitRouteId(transitRoute.getId());
+
+        return TransitRouteWithSegments.from(transitRoute, segment);
+    }
+
+    @Override
+    public TransitRoute findTransitRoute(Location from, Location to) {
+        return transitRouteRepository.findByDepartureAndArrival(
+                RoutePoint.parse(from),
+                RoutePoint.parse(to));
+    }
+
     @Transactional
     @Override
     public void saveTransitRouteWithSegments(ODsayApiSuccessResponseWrapper response) {
