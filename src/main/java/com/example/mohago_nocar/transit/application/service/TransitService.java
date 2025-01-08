@@ -38,7 +38,7 @@ public class TransitService implements TransitUseCase {
         return TransitMapper.mapRouteResponseDtoToTransitInfo(response);
     @Transactional
     @Override
-    public void saveOdsayApiResponse(ODsayApiSuccessResponseWrapper response) {
+    public void saveTransitRouteWithSegments(ODsayApiSuccessResponseWrapper response) {
         TransitRouteWithSegments transitRouteWithSegments = mapTransitRouteWithSegments(response);
         TransitRoute transitRoute = saveTransitRoute(transitRouteWithSegments);
         saveRouteSegments(transitRouteWithSegments, transitRoute);
