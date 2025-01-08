@@ -1,5 +1,6 @@
 package com.example.mohago_nocar.place.domain.model;
 
+import com.example.mohago_nocar.global.common.domain.BaseEntity;
 import com.example.mohago_nocar.global.common.domain.vo.Location;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class FestivalNearPlace {
+public class FestivalNearPlace extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
