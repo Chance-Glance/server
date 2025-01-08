@@ -29,7 +29,7 @@ public class FestivalNearPlaceMapper {
     }
 
     private static Location getLocation(PlaceResponseDto dto) {
-        return Location.from(dto.getLongitude(), dto.getLatitude());
+        return Location.from(dto.getPlaceName(), dto.getLongitude(), dto.getLatitude());
     }
 
     private static PlaceType getPlaceType(PlaceResponseDto dto) {
