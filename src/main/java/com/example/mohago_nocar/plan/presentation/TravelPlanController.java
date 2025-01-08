@@ -3,7 +3,7 @@ package com.example.mohago_nocar.plan.presentation;
 import com.example.mohago_nocar.global.common.response.ApiResponse;
 import com.example.mohago_nocar.plan.domain.service.TravelPlanUseCase;
 import com.example.mohago_nocar.plan.presentation.request.PlanTravelCourseRequestDto;
-import com.example.mohago_nocar.plan.presentation.response.PlanTravelCourseResponseDto;
+import com.example.mohago_nocar.plan.presentation.response.TransitRouteResponseDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class TravelPlanController {
     public ApiResponse<?> planTravelCourse(
             @RequestBody @Valid PlanTravelCourseRequestDto requestDto
     ) {
-        List<PlanTravelCourseResponseDto> responseDto = travelPlanUseCase.planCourse(requestDto);
+        List<TransitRouteResponseDto> responseDto = travelPlanUseCase.planCourse(requestDto);
         return ApiResponse.ok(responseDto);
     }
 }

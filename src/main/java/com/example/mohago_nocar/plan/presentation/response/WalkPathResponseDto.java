@@ -1,22 +1,21 @@
 package com.example.mohago_nocar.plan.presentation.response;
 
-import com.example.mohago_nocar.transit.domain.model.PathType;
-import com.example.mohago_nocar.transit.domain.model.SubPath;
-import com.example.mohago_nocar.transit.domain.model.WalkPath;
+import com.example.mohago_nocar.transit.domain.model.segment.RouteSegment;
+import com.example.mohago_nocar.transit.domain.model.segment.WalkingSegment;
 import lombok.Builder;
 import lombok.Getter;
 
-import static com.example.mohago_nocar.transit.domain.model.PathType.WALK;
+import static com.example.mohago_nocar.transit.domain.model.TrafficType.WALK;
 
 @Getter
 public class WalkPathResponseDto extends SubPathResponseDto{
 
-    public static WalkPathResponseDto of(SubPath subPath) {
-        WalkPath walkPath = (WalkPath) subPath;
+    public static WalkPathResponseDto of(RouteSegment routeSegment) {
+        WalkingSegment segment = (WalkingSegment) routeSegment;
 
         return WalkPathResponseDto.builder()
-                .distance(walkPath.getDistance())
-                .sectionTime(walkPath.getSectionTime())
+                .distance(segment.getDistance())
+                .sectionTime(segment.getSectionTime())
                 .build();
     }
 

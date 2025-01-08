@@ -1,38 +1,28 @@
 package com.example.mohago_nocar.plan.presentation.response;
 
-import com.example.mohago_nocar.transit.domain.model.PathType;
-import com.example.mohago_nocar.transit.domain.model.SubPath;
-import com.example.mohago_nocar.transit.domain.model.SubwayPath;
+import com.example.mohago_nocar.transit.domain.model.segment.RouteSegment;
+import com.example.mohago_nocar.transit.domain.model.segment.SubwaySegment;
 import lombok.Builder;
-import lombok.Generated;
 import lombok.Getter;
 
-import static com.example.mohago_nocar.transit.domain.model.PathType.SUBWAY;
+import static com.example.mohago_nocar.transit.domain.model.TrafficType.SUBWAY;
 
 @Getter
-public class SubwayPathResponseDto extends SubPathResponseDto{
+public class SubwayPathResponseDto extends SubPathResponseDto {
 
     private final String subwayLineName;
-    private final String startPlaceName;
-    private final double startLongitude;
-    private final double startLatitude;
-    private final String endPlaceName;
-    private final double endLongitude;
-    private final double endLatitude;
+    private final LocationResponse departure;
+    private final LocationResponse arrival;
 
-    public static SubwayPathResponseDto of(SubPath subPath) {
-        SubwayPath subwayPath = (SubwayPath) subPath;
+    public static SubwayPathResponseDto of(RouteSegment routeSegment) {
+        SubwaySegment segment = (SubwaySegment) routeSegment;
 
         return SubwayPathResponseDto.builder()
-                .distance(subwayPath.getDistance())
-                .sectionTime(subwayPath.getSectionTime())
-                .subwayLineName(subwayPath.getSubwayLineName())
-                .startPlaceName(subwayPath.getStartName())
-                .startLongitude(subwayPath.getStartX())
-                .startLatitude(subwayPath.getStartY())
-                .endPlaceName(subwayPath.getEndName())
-                .endLongitude(subwayPath.getEndX())
-                .endLatitude(subwayPath.getEndY())
+                .distance(segment.getDistance())
+                .sectionTime(segment.getSectionTime())
+                .subwayLineName(segment.getSubwayLineName())
+                .departure(LocationResponse.of(segment.getDeparture().getName(), segment.getDeparture().getLongitude(), segment.getDeparture().getLatitude()))
+                .arrival(LocationResponse.of(segment.getArrival().getName(), segment.getArrival().getLongitude(), segment.getArrival().getLatitude()))
                 .build();
     }
 
@@ -41,22 +31,12 @@ public class SubwayPathResponseDto extends SubPathResponseDto{
             double distance,
             int sectionTime,
             String subwayLineName,
-            String startPlaceName,
-            double startLongitude,
-            double startLatitude,
-            String endPlaceName,
-            double endLongitude,
-            double endLatitude
+            LocationResponse departure,
+            LocationResponse arrival
     ) {
         super(distance, sectionTime, SUBWAY);
         this.subwayLineName = subwayLineName;
-
-        this.startPlaceName = startPlaceName;
-        this.startLongitude = startLongitude;
-        this.startLatitude = startLatitude;
-
-        this.endPlaceName = endPlaceName;
-        this.endLongitude = endLongitude;
-        this.endLatitude = endLatitude;
+        this.departure = departure;
+        this.arrival = arrival;
     }
 }

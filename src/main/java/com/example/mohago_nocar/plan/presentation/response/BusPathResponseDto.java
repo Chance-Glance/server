@@ -1,38 +1,30 @@
 package com.example.mohago_nocar.plan.presentation.response;
 
-import com.example.mohago_nocar.transit.domain.model.BusPath;
-import com.example.mohago_nocar.transit.domain.model.SubPath;
+import com.example.mohago_nocar.transit.domain.model.segment.BusSegment;
+import com.example.mohago_nocar.transit.domain.model.segment.RouteSegment;
 import lombok.Builder;
 import lombok.Getter;
 
-import static com.example.mohago_nocar.transit.domain.model.PathType.BUS;
+import static com.example.mohago_nocar.transit.domain.model.TrafficType.BUS;
 
 @Getter
 public class BusPathResponseDto extends SubPathResponseDto {
 
     private final String busNo;
     private final int busType;
-    private final String startPlaceName;
-    private final double startLongitude;
-    private final double startLatitude;
-    private final String endPlaceName;
-    private final double endLongitude;
-    private final double endLatitude;
+    private final LocationResponse departure;
+    private final LocationResponse arrival;
 
-    public static BusPathResponseDto of(SubPath subPath) {
-        BusPath busPath = (BusPath) subPath;
+    public static BusPathResponseDto of(RouteSegment routeSegment) {
+        BusSegment segment = (BusSegment) routeSegment;
 
         return BusPathResponseDto.builder()
-                .distance(busPath.getDistance())
-                .sectionTime(busPath.getSectionTime())
-                .busNo(busPath.getBusNo())
-                .busType(busPath.getBusType())
-                .startPlaceName(busPath.getStartName())
-                .startLongitude(busPath.getStartX())
-                .startLatitude(busPath.getStartY())
-                .endPlaceName(busPath.getEndName())
-                .endLongitude(busPath.getEndX())
-                .endLatitude(busPath.getEndY())
+                .distance(segment.getDistance())
+                .sectionTime(segment.getSectionTime())
+                .busNo(segment.getBusNo())
+                .busType(segment.getBusType())
+                .departure(LocationResponse.of(segment.getDeparture().getName(), segment.getDeparture().getLongitude(), segment.getDeparture().getLatitude()))
+                .arrival(LocationResponse.of(segment.getArrival().getName(), segment.getArrival().getLongitude(), segment.getArrival().getLatitude()))
                 .build();
     }
 
@@ -42,23 +34,13 @@ public class BusPathResponseDto extends SubPathResponseDto {
             int sectionTime,
             String busNo,
             int busType,
-            String startPlaceName,
-            double startLongitude,
-            double startLatitude,
-            String endPlaceName,
-            double endLongitude,
-            double endLatitude
+            LocationResponse departure,
+            LocationResponse arrival
     ) {
         super(distance, sectionTime, BUS);
         this.busNo = busNo;
         this.busType = busType;
-
-        this.startPlaceName = startPlaceName;
-        this.startLongitude = startLongitude;
-        this.startLatitude = startLatitude;
-
-        this.endPlaceName = endPlaceName;
-        this.endLongitude = endLongitude;
-        this.endLatitude = endLatitude;
+        this.departure = departure;
+        this.arrival = arrival;
     }
 }
