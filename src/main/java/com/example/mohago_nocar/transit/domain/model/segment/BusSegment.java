@@ -1,5 +1,6 @@
 package com.example.mohago_nocar.transit.domain.model.segment;
 
+import com.example.mohago_nocar.global.common.domain.BaseEntity;
 import com.example.mohago_nocar.transit.domain.model.RoutePoint;
 import com.example.mohago_nocar.transit.domain.model.TrafficType;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import static com.example.mohago_nocar.transit.domain.model.TrafficType.BUS;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
-public class BusSegment implements RouteSegment {
+public class BusSegment extends BaseEntity implements RouteSegment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
