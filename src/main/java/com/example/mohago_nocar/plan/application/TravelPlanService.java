@@ -121,7 +121,7 @@ public class TravelPlanService implements TravelPlanUseCase {
     }
 
     @Override
-    public List<PlanTravelCourseResponseDto> planCourse(PlanTravelCourseRequestDto dto) {
+    public List<TransitRouteResponseDto> planCourse(PlanTravelCourseRequestDto dto) {
         Festival festival = validateAndGetFestival(dto);
         List<FestivalNearPlace> travelPlaces = getTravelPlaces(dto.travelPlaceIds());
 
