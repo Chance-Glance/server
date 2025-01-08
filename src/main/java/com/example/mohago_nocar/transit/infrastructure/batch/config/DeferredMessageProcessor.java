@@ -21,40 +21,38 @@ import static com.example.mohago_nocar.transit.infrastructure.error.code.Transit
 public class DeferredMessageProcessor implements ItemReader<OdsayApiRequestEvent>,
         ItemProcessor<OdsayApiRequestEvent, OdsayApiRequestEvent>, ItemWriter<OdsayApiRequestEvent>, StepExecutionListener {
 
-    private int deferredMessageProcessingCount = 0;
+    private static final String PROCESSED_DEFERRED_MESSAGES = "processedDeferredMessages";
+    private int processedDeferredMessageCount;
+    private int dailyBatchLimit;
 
     private final TransitRouteEventManager messageManager;
     private final ODsayApiLimitProvider apiLimitProvider;
-    private StepExecution stepExecution;
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
-        this.stepExecution = stepExecution;
-
+        this.dailyBatchLimit = apiLimitProvider.getDailyBatchLimit();
         ExecutionContext executionContext = stepExecution.getExecutionContext();
-        this.deferredMessageProcessingCount = executionContext.getInt("processedDeferredMessages", 0);
-        log.info("Starting step with processedDeferredMessages: {}", deferredMessageProcessingCount);
+        this.processedDeferredMessageCount = executionContext.getInt(PROCESSED_DEFERRED_MESSAGES, 0);
+        log.info("Starting step with processedDeferredMessages: {}", processedDeferredMessageCount);
     }
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
         ExecutionContext executionContext = stepExecution.getJobExecution().getExecutionContext();
-        executionContext.putInt("processedDeferredMessages", deferredMessageProcessingCount);
-        log.info("Step completed. Total processedDeferredMessages: {}", deferredMessageProcessingCount);
+        executionContext.putInt(PROCESSED_DEFERRED_MESSAGES, processedDeferredMessageCount);
+        log.info("Step completed. Total processedDeferredMessages: {}", processedDeferredMessageCount);
 
         return ExitStatus.COMPLETED;
     }
 
     @Override
     public OdsayApiRequestEvent read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-        int batchLimit = apiLimitProvider.getTodayBatchLimit();
-
-        if (deferredMessageProcessingCount >= batchLimit) {
+        if (processedDeferredMessageCount >= dailyBatchLimit) {
             return null;
         }
 
         try {
-            if (batchLimit <= 0) {
+            if (dailyBatchLimit <= 0) {
                 log.warn("Daily API Batch limit reached. Stopping processing.");
                 return null;
             }
@@ -62,7 +60,7 @@ public class DeferredMessageProcessor implements ItemReader<OdsayApiRequestEvent
             OdsayApiRequestEvent message = messageManager.readFromDeferredQueue();
 
             if (message != null) {
-                deferredMessageProcessingCount++;
+                processedDeferredMessageCount++;
             }
 
             return message;
