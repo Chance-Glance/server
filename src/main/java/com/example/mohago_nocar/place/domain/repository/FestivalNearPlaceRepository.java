@@ -5,6 +5,8 @@ import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface FestivalNearPlaceRepository {
 
     FestivalNearPlace save(FestivalNearPlace place);
@@ -14,4 +16,6 @@ public interface FestivalNearPlaceRepository {
     String getPlaceNameByLocation(Location location);
 
     Page<FestivalNearPlace> getFestivalNearPlaceByFestivalId(Long festivalId, Pageable pageable);
+
+    List<FestivalNearPlace> findByFestivalId(Long id);
 }

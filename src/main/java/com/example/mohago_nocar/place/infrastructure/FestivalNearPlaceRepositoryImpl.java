@@ -39,4 +39,10 @@ public class FestivalNearPlaceRepositoryImpl implements FestivalNearPlaceReposit
     public Page<FestivalNearPlace> getFestivalNearPlaceByFestivalId(Long festivalId, Pageable pageable) {
         return festivalNearPlaceJpaRepository.findAllByFestivalId(festivalId, pageable);
     }
+
+    @Override
+    public List<FestivalNearPlace> findByFestivalId(Long festivalId) {
+        return festivalNearPlaceJpaRepository.findAllByFestivalId(festivalId);
+    }
+
 }

@@ -30,51 +30,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class TransitService implements TransitUseCase {
 
-    private final ODsayApiUriGenerator uriGenerator;
-    private final FestivalRepository festivalRepository;
-    private final FestivalNearPlaceRepository festivalNearPlaceRepository;
-    private final OdsayApiRequestEntryRepository apiRequestEntryRepository;
     private final TransitRouteRepository transitRouteRepository;
     private final RouteSegmentRepository routeSegmentRepository;
-
-    // 새로운 축제가 생성되면 호출
-    @Transactional
-    public void saveTransitRoute(Long festivalId) {
-        Festival festival = festivalRepository.getFestivalById(festivalId);
-        List<FestivalNearPlace> nearPlaces = festivalNearPlaceRepository.findByFestivalId(festival.getId());
-        List<Location> travelLocations = extractLocationsIn(festival, nearPlaces);
-
-        List<OdsayApiRequestEntry> requests = new ArrayList<>();
-
-        for (Location from : travelLocations) {
-            for (Location to : travelLocations) {
-                if (to.equals(from)) {
-                    continue;
-                }
-                requests.add(createApiCallRequest(from, to));
-            }
-        }
-
-        apiRequestEntryRepository.saveAll(requests);
-    }
-
-    private List<Location> extractLocationsIn(Festival festival, List<FestivalNearPlace> travelPlaces) {
-        return Stream.concat(
-                Stream.of(festival.getLocation()),
-                travelPlaces.stream().map(FestivalNearPlace::getLocation)
-        ).toList();
-    }
-
-    private OdsayApiRequestEntry createApiCallRequest(Location from, Location to) {
-        URI requestURI = uriGenerator.buildRequestURI(
-                from.getLongitude(),
-                from.getLatitude(),
-                to.getLongitude(),
-                to.getLatitude()
-        );
-
-        return OdsayApiRequestEntry.of(requestURI, RoutePoint.parse(from), RoutePoint.parse(to));
-    }
 
     @Transactional(readOnly = true)
     @Override

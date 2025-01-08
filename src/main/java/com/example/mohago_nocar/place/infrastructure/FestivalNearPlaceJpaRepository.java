@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface FestivalNearPlaceJpaRepository extends JpaRepository<FestivalNearPlace, Long> {
 
     @Query("SELECT place.name FROM FestivalNearPlace place " +
@@ -17,4 +19,7 @@ public interface FestivalNearPlaceJpaRepository extends JpaRepository<FestivalNe
                                      Pageable pageable);
 
     Page<FestivalNearPlace> findAllByFestivalId(Long festivalId, Pageable pageable);
+
+    List<FestivalNearPlace> findAllByFestivalId(Long festivalId);
+
 }
