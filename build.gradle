@@ -48,9 +48,6 @@ dependencies {
 	// RabbitMQ
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
-	// RateLimiter
-	implementation 'com.google.guava:guava:33.3.1-jre'
-
 	// Batch
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 
