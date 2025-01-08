@@ -1,7 +1,7 @@
 package com.example.mohago_nocar.global.config;
 
-import com.example.mohago_nocar.transit.infrastructure.odsay.dto.response.ODsayApiResponse;
-import com.example.mohago_nocar.transit.infrastructure.odsay.ODsayApiResponseDeserializer;
+import com.example.mohago_nocar.transit.infrastructure.odsay.dto.response.ODsayApiSuccessResponse;
+import com.example.mohago_nocar.transit.infrastructure.odsay.deserializer.ODsayApiResponseDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +36,7 @@ public class WebClientConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new SimpleModule()
-                .addDeserializer(ODsayApiResponse.class, new ODsayApiResponseDeserializer()));
+                .addDeserializer(ODsayApiSuccessResponse.class, new ODsayApiResponseDeserializer()));
         return objectMapper;
     }
 
