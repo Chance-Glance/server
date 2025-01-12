@@ -11,13 +11,6 @@ import java.util.List;
 
 public interface FestivalNearPlaceJpaRepository extends JpaRepository<FestivalNearPlace, Long> {
 
-    @Query("SELECT place.name FROM FestivalNearPlace place " +
-            "WHERE place.location.latitude = :latitude " +
-            "AND place.location.longitude = :longitude")
-    Page<String> findNamesByLocation(@Param("latitude") Double latitude,
-                                     @Param("longitude") Double longitude,
-                                     Pageable pageable);
-
     Page<FestivalNearPlace> findAllByFestivalId(Long festivalId, Pageable pageable);
 
     List<FestivalNearPlace> findAllByFestivalId(Long festivalId);

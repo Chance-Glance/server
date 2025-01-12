@@ -13,8 +13,6 @@ public interface FestivalNearPlaceRepository {
 
     FestivalNearPlace findById(Long id);
 
-    String getPlaceNameByLocation(Location location);
-
     Page<FestivalNearPlace> getFestivalNearPlaceByFestivalId(Long festivalId, Pageable pageable);
 
     List<FestivalNearPlace> findByFestivalId(Long id);
