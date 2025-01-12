@@ -1,12 +1,13 @@
-package com.example.mohago_nocar.transit.infrastructure.odsay;
+package com.example.mohago_nocar.transit.infrastructure.odsay.client;
 
-import com.example.mohago_nocar.transit.infrastructure.odsay.dto.response.ODsayApiResponse;
+import com.example.mohago_nocar.transit.infrastructure.odsay.dto.response.ODsayApiSuccessResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -20,7 +21,8 @@ public class ApiLimitTest {
     private ODsayApiUriGenerator odsayApiUriGenerator;
 
     @Autowired
-    private WebClient.Builder webClientBuilder;
+    RestClient.Builder restClientBuilder;
+
 
     @DisplayName("ODsay API는 초당 7번까지 호출이 허용된다.")
     @Test
@@ -88,16 +90,22 @@ public class ApiLimitTest {
         return success;
     }
 
+    @DisplayName("API 호출 시간을 측정한다.")
+    @Test
+    public void odsayApiCallTime() throws Exception {
+        long startTime = System.currentTimeMillis();
+        makeApiCall();
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        System.out.println("호출 시간: "+ duration);
+
+    }
+
     private void makeApiCall() throws Exception {
-        ODsayApiResponse response = webClientBuilder.build().get()
+        ODsayApiSuccessResponse response = restClientBuilder.build().get()
                 .uri(odsayApiUriGenerator.buildRequestURI(127.0119379, 37.2871202, 127.0142055, 37.2888038))
                 .retrieve()
-                .onStatus(
-                        statusCode -> statusCode.value() == 429,
-                        clientResponse -> clientResponse.createException()
-                )
-                .bodyToMono(ODsayApiResponse.class)
-                .block();
+                .body(ODsayApiSuccessResponse.class);
 
         System.out.println("API 응답: " + response);
     }*/
