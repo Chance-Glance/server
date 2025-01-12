@@ -21,7 +21,7 @@ public record FestivalResponseDto(
     public static FestivalResponseDto of(Festival festival, List<String> imageUrlList) {
         return new FestivalResponseDtoBuilder()
                 .id(festival.getId())
-                .name(festival.getName())
+                .name(festival.getLocation().getPlaceName())
                 .activePeriod(festival.getActivePeriod())
                 .description(festival.getDescription())
                 .address(festival.getAddress())
