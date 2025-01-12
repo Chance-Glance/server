@@ -22,9 +22,6 @@ public class FestivalNearPlace extends BaseEntity {
     private Long id;
 
     @NotNull
-    private String name;
-
-    @NotNull
     private Long festivalId;
 
     @NotNull
@@ -51,7 +48,6 @@ public class FestivalNearPlace extends BaseEntity {
 
     public static FestivalNearPlace from(
             Long festivalId,
-            String name,
             OperatingSchedule operatingSchedule,
             Location location,
             String address,
@@ -61,7 +57,6 @@ public class FestivalNearPlace extends BaseEntity {
     ) {
         return FestivalNearPlace.builder()
                 .festivalId(festivalId)
-                .name(name)
                 .operatingSchedule(operatingSchedule)
                 .location(location)
                 .address(address)
@@ -74,7 +69,6 @@ public class FestivalNearPlace extends BaseEntity {
     @Builder
     private FestivalNearPlace(
             Long festivalId,
-            String name,
             OperatingSchedule operatingSchedule,
             Location location,
             String address,
@@ -83,7 +77,6 @@ public class FestivalNearPlace extends BaseEntity {
             String googlePlaceId
     ) {
         this.festivalId = festivalId;
-        this.name = name;
         this.operatingSchedule = operatingSchedule;
         this.location = location;
         this.address = address;

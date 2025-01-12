@@ -13,7 +13,6 @@ public class FestivalNearPlaceMapper {
 
     public static FestivalNearPlace convertToFestivalNearPlace(Long festivalId, PlaceResponseDto dto) {
 
-        String placeName = dto.getPlaceName();
         OperatingSchedule schedule = getSchedule(dto);
         Location location = getLocation(dto);
         String address = dto.getAddress();
@@ -21,7 +20,7 @@ public class FestivalNearPlaceMapper {
         PlaceType placeType = getPlaceType(dto);
         String googlePlaceId = dto.getId();
 
-        return FestivalNearPlace.from(festivalId, placeName, schedule, location, address, description, placeType, googlePlaceId);
+        return FestivalNearPlace.from(festivalId, schedule, location, address, description, placeType, googlePlaceId);
     }
 
     private static OperatingSchedule getSchedule(PlaceResponseDto dto) {
