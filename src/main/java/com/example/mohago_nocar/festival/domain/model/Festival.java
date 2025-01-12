@@ -22,9 +22,6 @@ public class Festival extends BaseEntity {
     private Long id;
 
     @NotNull
-    private String name;
-
-    @NotNull
     @Embedded
     private ActivePeriod activePeriod;
 
@@ -37,11 +34,15 @@ public class Festival extends BaseEntity {
 
     @NotNull
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "placeName", column = @Column(name = "name")),
+            @AttributeOverride(name = "latitude", column = @Column(name = "latitude")),
+            @AttributeOverride(name = "longitude", column = @Column(name = "longitude"))
+    })
     private Location location;
 
-    public static Festival from(String name, ActivePeriod activePeriod, String description, String address, Location location) {
+    public static Festival from(ActivePeriod activePeriod, String description, String address, Location location) {
         return Festival.builder()
-                .name(name)
                 .activePeriod(activePeriod)
                 .description(description)
                 .address(address)
@@ -50,8 +51,7 @@ public class Festival extends BaseEntity {
     }
 
     @Builder
-    private Festival(String name, ActivePeriod activePeriod, String description, String address, Location location) {
-        this.name = name;
+    private Festival( ActivePeriod activePeriod, String description, String address, Location location) {
         this.activePeriod = activePeriod;
         this.description = description;
         this.address = address;
