@@ -42,8 +42,7 @@ public class TravelPlanService implements TravelPlanUseCase {
         List<TransitRouteWithSegments> travelCourse = getOptimalTravelCourse(optimizedRoute);
 
         return travelCourse.stream()
-                .map(route -> TransitRouteResponseDto.of(
-                        festival.getName(), festival.getLocation(), route))
+                .map(route -> TransitRouteResponseDto.of(festival.getLocation(), route))
                 .toList();
     }
 

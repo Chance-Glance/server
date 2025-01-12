@@ -17,7 +17,6 @@ public record TransitRouteResponseDto(
 ) {
 
     public static TransitRouteResponseDto of(
-            String festivalName,
             Location festivalLocation,
             TransitRouteWithSegments transitRouteWithSegments
     ) {
@@ -26,9 +25,9 @@ public record TransitRouteResponseDto(
 
         return TransitRouteResponseDto.builder()
                 .departure(LocationResponse.of(
-                        getPlaceName(festivalName, festivalLocation, departure), departure.getLongitude(), departure.getLatitude()))
+                        getPlaceName(festivalLocation, departure), departure.getLongitude(), departure.getLatitude()))
                 .arrival(LocationResponse.of(
-                        getPlaceName(festivalName, festivalLocation, arrival), arrival.getLongitude(), arrival.getLatitude()))
+                        getPlaceName(festivalLocation, arrival), arrival.getLongitude(), arrival.getLatitude()))
                 .totalTime(transitRouteWithSegments.getTotalTime())
                 .totalDistance(transitRouteWithSegments.getTotalDistance())
                 .subPaths(transitRouteWithSegments.getOrderedRouteSegments().stream()
@@ -43,10 +42,10 @@ public record TransitRouteResponseDto(
     }
 
 
-    private static String getPlaceName(String festivalName, Location festivalLocation, RoutePoint routePoint) {
+    private static String getPlaceName(Location festivalLocation, RoutePoint routePoint) {
         if (festivalLocation.getLatitude() == routePoint.getLatitude()
                 && festivalLocation.getLongitude() == routePoint.getLongitude()) {
-            return festivalName;
+            return festivalLocation.getPlaceName();
         }
 
         return routePoint.getName();
