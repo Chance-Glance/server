@@ -23,7 +23,7 @@ public record NearPlaceResponseDto(
     public static NearPlaceResponseDto of(FestivalNearPlace festivalNearPlace, List<String> operatingHours, List<String> imageUrlList) {
         return new NearPlaceResponseDtoBuilder()
                 .id(festivalNearPlace.getId())
-                .name(festivalNearPlace.getName())
+                .name(festivalNearPlace.getLocation().getPlaceName())
                 .festivalId(festivalNearPlace.getFestivalId())
                 .operatingSchedule(operatingHours)
                 .location(festivalNearPlace.getLocation())
