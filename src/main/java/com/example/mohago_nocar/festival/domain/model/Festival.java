@@ -26,6 +26,9 @@ public class Festival extends BaseEntity {
     private ActivePeriod activePeriod;
 
     @NotNull
+    private Boolean available;
+
+    @NotNull
     @Column(columnDefinition = "TEXT")
     private String description;
 
