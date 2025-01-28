@@ -3,24 +3,32 @@ package com.example.mohago_nocar.plan.application;
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.repository.FestivalRepository;
 import com.example.mohago_nocar.global.common.domain.vo.Location;
+import com.example.mohago_nocar.global.common.exception.InternalServerException;
 import com.example.mohago_nocar.global.common.exception.InvalidValueException;
-import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
-import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceRepository;
+import com.example.mohago_nocar.place.application.PlaceService;
+import com.example.mohago_nocar.place.domain.model.Place;
+import com.example.mohago_nocar.place.domain.repository.PlaceRepository;
+import com.example.mohago_nocar.plan.domain.model.TravelLocationWithName;
+import com.example.mohago_nocar.plan.domain.model.TravelCatalog;
 import com.example.mohago_nocar.plan.domain.service.TravelPlanUseCase;
 import com.example.mohago_nocar.plan.presentation.request.PlanTravelCourseRequestDto;
 import com.example.mohago_nocar.plan.presentation.response.PlanTravelCourseResponseDto;
-import com.example.mohago_nocar.transit.domain.model.TransitInfo;
+import com.example.mohago_nocar.transit.domain.model.TransitRoute;
 import com.example.mohago_nocar.transit.domain.model.WalkPath;
-import com.example.mohago_nocar.transit.domain.service.TransitUseCase;
-import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayDistanceException;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.google.GoogleApiClient;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.google.dto.response.GoogleDistanceMatrixResponse;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.converter.DistanceMatrixConverter;
+import com.example.mohago_nocar.transit.domain.converter.TransitRouteConverter;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.google.dto.response.RouteSpecification;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.odsay.ODsayApiClient;
+import com.example.mohago_nocar.transit.infrastructure.externalApi.odsay.dto.response.OdsayRouteResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static com.example.mohago_nocar.plan.presentation.exception.PlanErrorCode.TRAVEL_DATE_NOT_IN_FESTIVAL_PERIOD;
 
@@ -29,24 +37,135 @@ import static com.example.mohago_nocar.plan.presentation.exception.PlanErrorCode
 @Slf4j
 public class TravelPlanService implements TravelPlanUseCase {
 
-    private final FestivalNearPlaceRepository festivalNearPlaceRepository;
+    private static final int FIRST = 0;
+
+    private final PlaceRepository placeRepository;
     private final FestivalRepository festivalRepository;
-    private final TransitUseCase transitUseCase;
+    private final PlaceService placeService;
+    private final GoogleApiClient googleApiClient;
+    private final ODsayApiClient oDsayApiClient;
 
-    private static final int EARTH_RADIUS = 6371;
+    @Override
+    public List<PlanTravelCourseResponseDto> planCourse(PlanTravelCourseRequestDto dto) {
+        Festival festival = validateAndGetFestival(dto);
+        List<Place> places = getTravelPlaces(festival, dto.placeIds());
 
-    private int calcTravelTime(List<Location> route,  Map<Location, Map<Location, TransitInfo>> transitMaps) {
-        int n = route.size();
+        TravelCatalog travelCatalog = TravelCatalog.of(festival, places);
+        List<Location> distinctLocations = travelCatalog.getDistinctLocations();
 
-        int travelTime = 0;
-        for (int i = 0; i < n - 1; i++) {
-            travelTime += transitMaps.get(route.get(i)).get(route.get(i + 1)).getTotalTime();
-        }
-        return travelTime;
+        List<RouteSpecification> routeSpecifications = fetchDistanceAndDurationBetween(distinctLocations);
+        List<Location> optimizedRoute = getOptimalRoute(distinctLocations, routeSpecifications);
+
+        List<PlanTravelCourseResponseDto> travelCourse = createTravelCourse(optimizedRoute, travelCatalog);
+        log.info(travelCourse.toString());
+        return travelCourse;
     }
 
-    private void routeBacktracking(int k, List<Location> locations, Map<Location, Map<Location, TransitInfo>> transitMaps,
-                                   List<Location> optimal, List<Location> route, List<Boolean> isSelected) {
+    private Festival validateAndGetFestival(PlanTravelCourseRequestDto dto) {
+        Festival festival = festivalRepository.getFestivalById(dto.festivalId());
+        ensureTravelDateDuringFestival(festival, dto.travelDate());
+        return festival;
+    }
+
+    private void ensureTravelDateDuringFestival(Festival festival, LocalDate travelDate) {
+        if (!festival.isDateDuringFestival(travelDate)) {
+            throw new InvalidValueException(TRAVEL_DATE_NOT_IN_FESTIVAL_PERIOD);
+        }
+    }
+
+    private List<Place> getTravelPlaces(Festival festival, List<String> placeIds) {
+        List<Place> places = placeRepository.findByIds(festival.getId(), placeIds);
+        if (places.isEmpty()) {
+            places = placeService.cachePlaces(festival.getId(), festival.getLocation()).stream()
+                    .filter(place -> placeIds.contains(place.getId()))
+                    .toList();
+        }
+        return places;
+    }
+
+    private List<RouteSpecification> fetchDistanceAndDurationBetween(List<Location> distinctLocations) {
+        List<RouteSpecification> routeSpecs = new ArrayList<>();
+        int toVisitSize = distinctLocations.size();
+
+        for (int originIndex = FIRST; originIndex < toVisitSize; originIndex++) {
+            Location origin = distinctLocations.get(originIndex);
+            List<Location> destinations = createDestination(distinctLocations, originIndex);
+
+            GoogleDistanceMatrixResponse matrix = googleApiClient.getDistanceMatrix(origin, destinations);
+            routeSpecs.addAll(
+                    DistanceMatrixConverter.convertMatrixToRouteSpecs(matrix, toVisitSize -1, origin, destinations));
+        }
+
+        return routeSpecs;
+    }
+
+    private List<Location> createDestination(List<Location> distinctLocations, int excludeIndex) {
+        return IntStream.range(0, distinctLocations.size())
+                .filter(index -> index != excludeIndex)
+                .mapToObj(distinctLocations::get)
+                .toList();
+    }
+
+    private List<Location> getOptimalRoute(List<Location> distinctLocations, List<RouteSpecification> routeSpecificationBetweenLocations) {
+        int locationCount = distinctLocations.size();
+        Map<Location, Map<Location, RouteSpecification>> fromToTransitInfoMap = new HashMap<>();
+
+        for (int originIndex = FIRST; originIndex < locationCount; originIndex++) {
+            Map<Location, RouteSpecification> toLocationTransitInfoMap = new HashMap<>();
+
+            for (int destinationIndex = FIRST; destinationIndex < locationCount; destinationIndex++) {
+
+                if (originIndex == destinationIndex) {
+                    continue;
+                }
+
+                Location origin = distinctLocations.get(originIndex);
+                Location destination = distinctLocations.get(destinationIndex);
+
+                RouteSpecification routeSpec = getMatchedRouteSpec(origin, destination, routeSpecificationBetweenLocations);
+                toLocationTransitInfoMap.put(destination, routeSpec);
+            }
+
+            fromToTransitInfoMap.put(distinctLocations.get(originIndex), toLocationTransitInfoMap);
+        }
+
+        List<Location> route = new ArrayList<>();
+        List<Boolean> isSelected = new ArrayList<>();
+        List<Location> optimalRoute = new ArrayList<>();
+        for (int i = 0; i < locationCount; i++) {
+            isSelected.add(false);
+            optimalRoute.add(distinctLocations.get(i));
+        }
+
+        routeBacktracking(0, distinctLocations, fromToTransitInfoMap , optimalRoute, route, isSelected);
+        return optimalRoute;
+    }
+
+    private RouteSpecification getMatchedRouteSpec(
+            Location origin,
+            Location destination,
+            List<RouteSpecification> routeSpecificationBetweenLocations
+    ) {
+        Optional<RouteSpecification> routeSpecification = routeSpecificationBetweenLocations.stream()
+                .filter(route -> route.isEqualLocation(origin, destination))
+                .findFirst();
+
+        if (routeSpecification.isEmpty()) {
+            log.error("origin-{}, destination-{}를 가지는 RouteSpec을 찾을 수 없습니다.", origin, destination);
+            throw new InternalServerException();
+        }
+
+        return routeSpecification.get();
+    }
+
+    private void routeBacktracking(
+            int k,
+            List<Location> locations,
+            Map<Location, Map<Location, RouteSpecification>> transitMaps,
+            List<Location> optimal,
+            List<Location> route,
+            List<Boolean> isSelected
+    ) {
         int n = locations.size();
 
         if (k == n)
@@ -75,155 +194,120 @@ public class TravelPlanService implements TravelPlanUseCase {
         }
     }
 
-    private Double convertLongitudeToKmDist(Double dx, Double stdLatitude) {
+    private int calcTravelTime(List<Location> route,  Map<Location, Map<Location, RouteSpecification>> routeMaps) {
+        int n = route.size();
 
-        return EARTH_RADIUS * dx * Math.cos(stdLatitude) * Math.PI / 180;
-    }
-
-    private Double convertLatitudeToKmDist(Double dy) {
-
-        return EARTH_RADIUS * dy * Math.PI / 180;
-    }
-
-    private List<Location> getOptimalRoute(List<Location> allLocations) {
-        int locationCount = allLocations.size();
-        Map<Location, Map<Location, TransitInfo>> fromToTransitInfoMap = new HashMap<>();
-
-        for (int fromIndex = 0; fromIndex < locationCount; fromIndex++) {
-            Map<Location, TransitInfo> toLocationTransitInfoMap = new HashMap<>();
-
-            for (int toIndex = 0; toIndex < locationCount; toIndex++) {
-
-                if (fromIndex == toIndex) {
-                    continue;
-                }
-
-                Location fromLocation = allLocations.get(fromIndex);
-                Location toLocation = allLocations.get(toIndex);
-
-                TransitInfo transitInfo = getTransitInfoBetweenLocations(fromLocation, toLocation);
-                toLocationTransitInfoMap.put(toLocation, transitInfo);
-            }
-
-            fromToTransitInfoMap.put(allLocations.get(fromIndex), toLocationTransitInfoMap);
+        int travelTime = 0;
+        for (int i = 0; i < n - 1; i++) {
+            travelTime += routeMaps.get(route.get(i)).get(route.get(i + 1)).durationInMinutes();
         }
-
-        List<Location> route = new ArrayList<>();
-        List<Boolean> isSelected = new ArrayList<>();
-        List<Location> optimalRoute = new ArrayList<>();
-        for (int i = 0; i < locationCount; i++) {
-            isSelected.add(false);
-            optimalRoute.add(allLocations.get(i));
-        }
-
-        routeBacktracking(0, allLocations, fromToTransitInfoMap , optimalRoute, route, isSelected);
-        return optimalRoute;
+        return travelTime;
     }
 
-    @Override
-    public List<PlanTravelCourseResponseDto> planCourse(PlanTravelCourseRequestDto dto) {
-        Festival festival = validateAndGetFestival(dto);
-        List<FestivalNearPlace> travelPlaces = getTravelPlaces(dto.travelPlaceIds());
 
-        List<Location> allLocations = combineLocations(festival, travelPlaces);
-        List<Location> optimizedRoute = getOptimalRoute(allLocations);
-
-        Map<Location, String> locationNameInfo = createLocationNameMap(festival, optimizedRoute);
-
-        return createTravelCourse(optimizedRoute, locationNameInfo);
-    }
-
-    private Festival validateAndGetFestival(PlanTravelCourseRequestDto dto) {
-        Festival festival = festivalRepository.getFestivalById(dto.festivalId());
-        ensureTravelDateDuringFestival(festival, dto.travelDate());
-        return festival;
-    }
-
-    private void ensureTravelDateDuringFestival(Festival festival, LocalDate travelDate) {
-        if (!festival.isDateDuringFestival(travelDate)) {
-            throw new InvalidValueException(TRAVEL_DATE_NOT_IN_FESTIVAL_PERIOD);
-        }
-    }
-
-    private List<FestivalNearPlace> getTravelPlaces(List<Long> placeIds) {
-        return placeIds.stream()
-                .map(festivalNearPlaceRepository::findById)
-                .toList();
-    }
-
-    private List<Location> combineLocations(Festival festival, List<FestivalNearPlace> travelPlaces) {
-        return Stream.concat(
-                Stream.of(festival.getLocation()),
-                travelPlaces.stream().map(FestivalNearPlace::getLocation)
-        ).toList();
-    }
-
-    private Map<Location, String> createLocationNameMap(Festival festival, List<Location> locations) {
-        return locations.stream()
-                .collect(Collectors.toMap(
-                        location -> location,
-                        location -> getPlaceName(festival, location)
-                ));
-    }
-
-    private String getPlaceName(Festival festival, Location location) {
-        if (location.equals(festival.getLocation())) {
-            return festival.getName();
-        }
-
-        return festivalNearPlaceRepository.getPlaceNameByLocation(location);
-    }
-
-    private List<PlanTravelCourseResponseDto> createTravelCourse(List<Location> optimizedRoute, Map<Location, String> locationNameInfo) {
+    private List<PlanTravelCourseResponseDto> createTravelCourse(
+            List<Location> optimizedRoute,
+            TravelCatalog travelCatalog
+    ) {
+        Map<Location, String> locationNameMap = travelCatalog.createLocationNameMap();
         List<PlanTravelCourseResponseDto> travelCourse = new ArrayList<>();
 
-        for (int i = 0; i < optimizedRoute.size() - 1; i++) {
-            Location fromLocation = optimizedRoute.get(i);
-            Location toLocation = optimizedRoute.get(i + 1);
+        for (int index = FIRST; index < optimizedRoute.size() - 1; index++) {
+            Location origin = optimizedRoute.get(index);
+            Location destination = optimizedRoute.get(index + 1);
 
-            String fromName = locationNameInfo.get(fromLocation);
-            String toName = locationNameInfo.get(toLocation);
+            String originName = handleDuplicateOrigins(origin, travelCourse, locationNameMap, travelCatalog);
+            String destinationName = locationNameMap.get(destination);
 
-            TransitInfo transitInfo = getTransitInfoBetweenLocations(fromLocation, toLocation);
+            TransitRoute transitRoute = getTransitRouteBetweenLocations(origin, destination);
+            travelCourse.add(createResponse(origin, originName, destination, destinationName, transitRoute));
 
-            travelCourse.add(createResponseDto(fromLocation, fromName, toLocation, toName, transitInfo));
+            handleDuplicateDestinations(travelCatalog, travelCourse, destination, destinationName);
         }
 
         return travelCourse;
     }
 
-    private TransitInfo getTransitInfoBetweenLocations(Location fromLocation, Location toLocation) {
-        try {
-            return transitUseCase.findRouteTransitBetweenPlaces(fromLocation, toLocation);
+    private String handleDuplicateOrigins(
+            Location location,
+            List<PlanTravelCourseResponseDto> travelCourse,
+            Map<Location, String> locationNameMap,
+            TravelCatalog travelCatalog
+    ) {
+        if (travelCatalog.checkDuplicateLocation(location)) {
+            List<TravelLocationWithName> duplicatedLocations = travelCatalog.getTravelLocations(location);
+            List<PlanTravelCourseResponseDto> responses = createResponses(duplicatedLocations);
+            travelCourse.addAll(responses);
+            return responses.getLast().endPlaceName(); // 마지막 장소 이름 반환
+        }
 
-        } catch (OdsayDistanceException e) {
-            double dist = getKmDist(fromLocation, toLocation);
-            int totalTime = (int) Math.round(dist * 15);
-            WalkPath walkPath = new WalkPath(dist, totalTime);
+        return locationNameMap.get(location); // 중복이 없으면 기존 이름 반환
+    }
 
-            return TransitInfo.from(totalTime, dist, List.of(walkPath));
+    private TransitRoute getTransitRouteBetweenLocations(Location origin, Location destination) {
+        OdsayRouteResponse response = oDsayApiClient.searchTransitRoute(
+                origin.getLongitude(), origin.getLatitude(), destination.getLongitude(), destination.getLatitude());
+        return TransitRouteConverter.convertRouteResponseDtoToTransitRoute(response, origin, destination);
+    }
+
+    private void handleDuplicateDestinations(
+            TravelCatalog travelCatalog, List<PlanTravelCourseResponseDto> travelCourse,
+            Location destinationLocation, String destinationName
+    ) {
+        if (travelCatalog.checkDuplicateLocation(destinationLocation)) {
+            List<TravelLocationWithName> duplicatedLocations = travelCatalog.getTravelLocations(destinationLocation);
+            List<PlanTravelCourseResponseDto> responseDtos = createResponsesStartWith(destinationName, duplicatedLocations);
+            travelCourse.addAll(responseDtos);
         }
     }
 
-    /**
-     * 두 위치(Location) 사이의 거리를 킬로미터 단위로 계산합니다.
-     * @param startLocation
-     * @param endLocation
-     * @return 두 위치(Location) 사이의 거리
-     */
-    private Double getKmDist(Location startLocation, Location endLocation) {
-        Double dx = Math.abs(startLocation.getLongitude() - endLocation.getLongitude());
-        dx = Math.min(dx, 360 - dx);
+    private List<PlanTravelCourseResponseDto> createResponsesStartWith(
+            String startName, List<TravelLocationWithName> duplicatedLocations) {
+        // 시작 지점 탐색
+        int startIndex = -1;
+        for (int i = 0; i < duplicatedLocations.size(); i++) {
+            if (duplicatedLocations.get(i).getName().equals(startName)) {
+                startIndex = i;
+                break;
+            }
+        }
 
-        Double dy = Math.abs(startLocation.getLatitude() - endLocation.getLatitude());
+        // 시작 지점이 없을 경우 예외 처리
+        if (startIndex == -1) {
+            throw new IllegalArgumentException("Start name not found in locations.");
+        }
 
-        Double longitudeDist = convertLongitudeToKmDist(dx, startLocation.getLatitude());
-        Double latitudeDist = convertLatitudeToKmDist(dy);
+        if (startIndex != 0) {
+            Collections.swap(duplicatedLocations, 0, startIndex);
+        }
 
-        return Math.sqrt(longitudeDist * longitudeDist + latitudeDist * latitudeDist);
+        return createResponses(duplicatedLocations);
     }
 
-    private PlanTravelCourseResponseDto createResponseDto(Location fromLocation, String fromName, Location toLocation, String toName, TransitInfo transitInfo) {
-        return PlanTravelCourseResponseDto.of(fromLocation, fromName, toLocation, toName, transitInfo);
+    private List<PlanTravelCourseResponseDto> createResponses(List<TravelLocationWithName> duplicatedLocations) {
+        List<PlanTravelCourseResponseDto> responseBetweenSameLocations = new ArrayList<>();
+
+        for (int from = 0; from < duplicatedLocations.size() -1; from++) {
+            PlanTravelCourseResponseDto dto = PlanTravelCourseResponseDto.of(
+                    duplicatedLocations.get(from).getLocation(),
+                    duplicatedLocations.get(from).getName(),
+                    duplicatedLocations.get(from + 1).getLocation(),
+                    duplicatedLocations.get(from + 1).getName(),
+                    TransitRoute.from(0, 0, List.of(new WalkPath((double) 0, 1)))
+            );
+            responseBetweenSameLocations.add(dto);
+        }
+
+        return responseBetweenSameLocations;
     }
+
+    private PlanTravelCourseResponseDto createResponse(
+            Location originLocation, String originName,
+            Location destinationLocation, String destinationName,
+            TransitRoute transitRoute
+    ) {
+        return PlanTravelCourseResponseDto.of(
+                originLocation, originName, destinationLocation, destinationName, transitRoute);
+    }
+
 }
