@@ -3,7 +3,7 @@ package com.example.mohago_nocar.place.application;
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
 import com.example.mohago_nocar.global.common.domain.vo.Location;
-import com.example.mohago_nocar.place.application.converter.PlaceConverter;
+import com.example.mohago_nocar.place.domain.converter.PlaceConverter;
 import com.example.mohago_nocar.place.domain.model.Place;
 import com.example.mohago_nocar.place.domain.repository.PlaceRepository;
 import com.example.mohago_nocar.place.domain.service.PlaceUseCase;

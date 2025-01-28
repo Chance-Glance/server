@@ -1,4 +1,4 @@
-package com.example.mohago_nocar.place.application.converter;
+package com.example.mohago_nocar.place.domain.converter;
 
 import com.example.mohago_nocar.global.common.domain.vo.Location;
 import com.example.mohago_nocar.place.domain.model.*;
