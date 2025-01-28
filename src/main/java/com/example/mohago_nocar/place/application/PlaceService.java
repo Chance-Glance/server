@@ -2,22 +2,15 @@ package com.example.mohago_nocar.place.application;
 
 import com.example.mohago_nocar.festival.domain.model.Festival;
 import com.example.mohago_nocar.festival.domain.service.FestivalUseCase;
-import com.example.mohago_nocar.festival.presentation.response.FestivalLocationResponseDto;
-import com.example.mohago_nocar.global.common.dto.PagedResponseDto;
-import com.example.mohago_nocar.place.application.mapper.FestivalNearPlaceMapper;
-import com.example.mohago_nocar.place.domain.model.FestivalNearPlace;
-import com.example.mohago_nocar.place.domain.model.FestivalNearPlaceImage;
-import com.example.mohago_nocar.place.domain.model.OperatingSchedule;
-import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceImageRepository;
-import com.example.mohago_nocar.place.domain.repository.FestivalNearPlaceRepository;
+import com.example.mohago_nocar.global.common.domain.vo.Location;
+import com.example.mohago_nocar.place.application.converter.PlaceConverter;
+import com.example.mohago_nocar.place.domain.model.Place;
+import com.example.mohago_nocar.place.domain.repository.PlaceRepository;
 import com.example.mohago_nocar.place.domain.service.PlaceUseCase;
-import com.example.mohago_nocar.place.infrastructure.externalApi.GoogleApiClient;
-import com.example.mohago_nocar.place.infrastructure.externalApi.dto.response.PlaceResponseDto;
+import com.example.mohago_nocar.place.infrastructure.externalApi.kakao.KakaoApiClient;
+import com.example.mohago_nocar.place.infrastructure.externalApi.kakao.dto.response.KakaoPlacesResponse;
 import com.example.mohago_nocar.place.presentation.NearPlaceResponseDto;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -26,65 +19,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlaceService implements PlaceUseCase {
 
-    private final GoogleApiClient googleApiClient;
+    private static final int RADIUS = 3000;
+    private static final int PAGE_SIZE = 10;
+
     private final FestivalUseCase festivalUseCase;
-    private final FestivalNearPlaceRepository festivalNearPlaceRepository;
-    private final FestivalNearPlaceImageRepository festivalNearPlaceImageRepository;
+    private final PlaceRepository placeRepository;
+    private final KakaoApiClient kakaoApiClient;
 
-    private static final int RADIUS = 1500;
-
-    @Override
     @Transactional
-    public void updateAllFestivalNearbyPlaces() {
-        List<Festival> festivals = festivalUseCase.getAllFestivals();
-        festivals.forEach(festival -> updateFestivalNearbyPlaces(festival.getId()));
-    }
-
-    @Transactional(readOnly = true)
     @Override
-    public PagedResponseDto<NearPlaceResponseDto> getFestivalNearPlaces(Long festivalId, Pageable pageable) {
+    public List<NearPlaceResponseDto> getFestivalNearPlaces(Long festivalId) {
         Festival festival = festivalUseCase.getFestival(festivalId);
-        Page<FestivalNearPlace> pagedPlaces = festivalNearPlaceRepository.getFestivalNearPlaceByFestivalId(festivalId, pageable);
-        Page<NearPlaceResponseDto> nearPlaceResponseDtos = pagedPlaces.map(this::convertPlaceToNearPlaceResponseDto);
-        return new PagedResponseDto<>(nearPlaceResponseDtos);
+        List<Place> places = placeRepository.getFestivalAroundPlaces(festivalId);
+        if (places.isEmpty()) {
+            places = cachePlaces(festivalId, festival.getLocation());
+        }
+
+        return PlaceConverter.convertToNearPlaceResponseDtos(festivalId, places);
     }
 
-    private NearPlaceResponseDto convertPlaceToNearPlaceResponseDto(FestivalNearPlace place) {
-        List<FestivalNearPlaceImage> images = festivalNearPlaceImageRepository.getAllPlaceImageByPlaceId(place.getId());
-        List<String> imageUrls = images.stream().map(FestivalNearPlaceImage::getImageUrl).toList();
-        List<String> operatingHours = place.getOperatingSchedule().getOperatingHours().stream().map(OperatingSchedule.OperatingHour::getOperatingHour).toList();
-        return NearPlaceResponseDto.of(place, operatingHours, imageUrls);
+    public List<Place> cachePlaces(Long festivalId, Location centerLocation) {
+        KakaoPlacesResponse placesFromExternalApi = searchPlacesAround(centerLocation);
+        List<Place> places = PlaceConverter.convertToPlaces(placesFromExternalApi);
+        return placeRepository.saveAllToCache(festivalId, places);
     }
 
-    private void updateFestivalNearbyPlaces(Long festivalId) {
-        FestivalLocationResponseDto festivalLocation = festivalUseCase.getFestivalLocation(festivalId);
-        List<PlaceResponseDto> nearbyPlaces = searchNearbyPlacesWithImages(festivalLocation);
-        saveNearbyPlacesWithImages(festivalId, nearbyPlaces);
-    }
-
-    private List<PlaceResponseDto> searchNearbyPlacesWithImages(FestivalLocationResponseDto festivalLocation) {
-        return googleApiClient.searchNearbyPlacesWithImageUris(
-                festivalLocation.location().getLatitude(),
-                festivalLocation.location().getLongitude(),
-                RADIUS
+    private KakaoPlacesResponse searchPlacesAround(Location centerLocation) {
+        return kakaoApiClient.searchAttractionPlaces(
+                centerLocation,
+                RADIUS,
+                PAGE_SIZE
         );
-    }
-
-    private void saveNearbyPlacesWithImages(Long festivalId, List<PlaceResponseDto> nearbyPlaces) {
-        nearbyPlaces.forEach(placeDto -> {
-            FestivalNearPlace savedPlace = saveFestivalNearPlace(festivalId, placeDto);
-            saveFestivalNearPlaceImages(savedPlace.getId(), placeDto.getPhotos());
-        });
-    }
-
-    private FestivalNearPlace saveFestivalNearPlace(Long festivalId, PlaceResponseDto placeDto) {
-        FestivalNearPlace place = FestivalNearPlaceMapper.convertToFestivalNearPlace(festivalId, placeDto);
-        return festivalNearPlaceRepository.save(place);
-    }
-
-    private void saveFestivalNearPlaceImages(Long placeId, List<String> photos) {
-        List<FestivalNearPlaceImage> placeImages = FestivalNearPlaceMapper.convertToFestivalNearPlaceImage(placeId, photos);
-        placeImages.forEach(festivalNearPlaceImageRepository::save);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.example.mohago_nocar.plan.presentation.response;
 
 import com.example.mohago_nocar.global.common.domain.vo.Location;
-import com.example.mohago_nocar.transit.domain.model.TransitInfo;
+import com.example.mohago_nocar.transit.domain.model.TransitRoute;
 import lombok.Builder;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public record PlanTravelCourseResponseDto(
             String fromName,
             Location toLocation,
             String toName,
-            TransitInfo transitInfo
+            TransitRoute transitRoute
     ) {
         return PlanTravelCourseResponseDto.builder()
                 .startPlaceName(fromName)
@@ -33,9 +33,9 @@ public record PlanTravelCourseResponseDto(
                 .endPlaceName(toName)
                 .endLongitude(toLocation.getLongitude())
                 .endLatitude(toLocation.getLatitude())
-                .totalTime(transitInfo.getTotalTime())
-                .totalDistance(transitInfo.getTotalDistance())
-                .subPaths(transitInfo.getSubPaths().stream()
+                .totalTime(transitRoute.getTotalTime())
+                .totalDistance(transitRoute.getTotalDistance())
+                .subPaths(transitRoute.getSubPaths().stream()
                         .map(subPath ->
                             switch (subPath.getPathType()) {
                                 case BUS -> BusPathResponseDto.of(subPath);

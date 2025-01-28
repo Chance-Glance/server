@@ -6,9 +6,10 @@ import lombok.*;
 @Embeddable
 @Builder
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"longitude", "latitude"})
+@ToString
 public class Location {
 
     private Double longitude; // x
@@ -20,4 +21,9 @@ public class Location {
                 .latitude(latitude)
                 .build();
     }
+
+    public static Location from(String longitude, String latitude) {
+        return Location.from(Double.valueOf(longitude), Double.valueOf(latitude));
+    }
+
 }
