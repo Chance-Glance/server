@@ -1,7 +1,7 @@
 package com.example.mohago_nocar.transit.infrastructure.error.code;
 
 import com.example.mohago_nocar.global.common.exception.Status;
-import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayException;
+import com.example.mohago_nocar.transit.infrastructure.error.exception.OdsayServerException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,10 @@ public enum OdsayErrorCode implements Status {
     ARRIVAL_POINT_MISSING(HttpStatus.NOT_FOUND, "ODSAY404", "도착지 정류장이 없습니다."),
     START_ARRIVAL_POINTS_MISSING(HttpStatus.NOT_FOUND, "ODSAY404", "출발지, 도착지 정류장이 없습니다."),
     SERVICE_AREA_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "ODSAY404", "서비스 지역이 아닙니다."),
-    NO_SEARCH_RESULTS(HttpStatus.NOT_FOUND, "ODSAY404", "길찾기 검색결과가 없습니다.")
+    NO_SEARCH_RESULTS(HttpStatus.NOT_FOUND, "ODSAY404", "길찾기 검색결과가 없습니다."),
+
+    // TOO_MANY_REQUESTS
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "ODSAY429", "Too Many Requests"),
     ;
 
     private final HttpStatus httpStatus;
@@ -43,11 +46,21 @@ public enum OdsayErrorCode implements Status {
             case "-98" -> POINTS_WITHIN_DISTANCE;
             case "-99" -> NO_SEARCH_RESULTS;
             case "-1" -> COMPONENT_ERROR;
-            default -> throw new OdsayException("unknown Error Code 발생 : "+ code, ODSAY_SERVER_ERROR);
+            case "429" -> TOO_MANY_REQUESTS;
+            default -> throw new OdsayServerException("unknown Error Code 발생 : "+ code, ODSAY_SERVER_ERROR);
         };
     }
 
-    public boolean isDistanceException() {
+    public boolean isDistanceError() {
         return this == POINTS_WITHIN_DISTANCE;
     }
+
+    public boolean isServerError() {
+        return this == ODSAY_SERVER_ERROR;
+    }
+
+    public boolean isTooManyRequests() {
+        return this == TOO_MANY_REQUESTS;
+    }
+
 }
