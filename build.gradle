@@ -14,6 +14,10 @@ java {
 }
 
 configurations {
+	all {
+		exclude group: "commons-logging", module: "commons-logging"
+		exclude group: "org.slf4j", module: "slf4j-simple"
+	}
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
@@ -56,6 +60,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'it.ozimov:embedded-redis:0.7.3'
+	runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {

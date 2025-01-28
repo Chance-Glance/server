@@ -2,11 +2,10 @@ server:
   port: ${SERVER_PORT:8080}
 
 spring:
-  config:
-    activate:
-      on-profile: "dev"
   application:
     name: mohago-nocar
+  profiles:
+    active: dev
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mohago_nocar}
     username: ${DB_USERNAME}
@@ -39,5 +38,43 @@ odsay:
   api-key: ${ODSAY_API_KEY}
 
 google:
-  url : https://places.googleapis.com/v1/
+  maps:
+    distance : https://maps.googleapis.com/maps/api/distancematrix/json
   api-key : ${GOOGLE_API_KEY}
+
+kakao:
+  local:
+    category: https://dapi.kakao.com/v2/local/search/category
+  api-key: ${KAKAO_API_KEY}
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+#  datasource:
+#    driver-class-name: org.h2.Driver
+#    url: jdbc:h2:mem:~/mohagoNoCar
+#    username: sa
+#    password:
+#  jpa:
+#    database-platform: org.hibernate.dialect.H2Dialect
+#    hibernate:
+#      ddl-auto: create
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.H2Dialect
+#        show_sql: true
+#        format_sql: true
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+  data:
+    redis:
+      host: localhost
+      port: 6378
