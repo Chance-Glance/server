@@ -1,0 +1,50 @@
+name: Require Code Owners Approval for Develop Branch
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  require-codeowners-approvals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check approvals from Code Owners
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prAuthor = context.payload.pull_request.user.login.toLowerCase();
+
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            
+            const approvedBy = new Set();
+            reviews.forEach(review => {
+              if (review.state === 'APPROVED') {
+                approvedBy.add(review.user.login.toLowerCase());
+              }
+            });
+
+            const codeOwners = ['mingmingmon', 'mungsil'];
+            const isAuthorCodeOwner = codeOwners.includes(prAuthor);
+
+            let requiredApprovals = [];
+            if (isAuthorCodeOwner) {
+              requiredApprovals = codeOwners.filter(user => user !== prAuthor);
+            } else {
+              requiredApprovals = codeOwners;
+            }
+
+            const allApproved = requiredApprovals.every(user => approvedBy.has(user));
+
+            if (!allApproved) {
+              const currentApprovers = Array.from(approvedBy).join(', ');
+              const requiredApprovers = requiredApprovals.join(', ');
+
+              throw new Error(`PR #${prNumber} 작성자: @${prAuthor}\n필요한 승인자: ${requiredApprovers}\n현재 승인자: ${currentApprovers}\n모든 코드 소유자의 승인이 필요합니다.`);
+            }
