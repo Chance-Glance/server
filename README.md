@@ -25,8 +25,7 @@ No Car 서버는 **자가용 없이**도 **편리하고 즐거운 여행**을 �
 ---
 
 ## 🛠️ 시스템 아키텍처
-![모하고노카 drawio (1)](https://github.com/user-attachments/assets/ac2c916a-e70b-426c-adf0-211fc84b6223)
-
+![모하고노카_다이어그램 drawio (3)](https://github.com/user-attachments/assets/766aa3c2-86a6-480f-a3d4-c21345bad493)
 
 
 
